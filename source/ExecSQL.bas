@@ -77,7 +77,7 @@ End Sub
 '[ 戻り値 ]　なし
 '*****************************************************************************
 Public Sub ExecuteSQL()
-    If CreateObject("Scripting.FileSystemObject").FileExists(ActiveWorkbook.FullName) = False Then
+    If Dir(ActiveWorkbook.FullName) = "" Then
         Call MsgBox("一度も保存されていないファイルでは実行できません")
         Exit Sub
     End If
