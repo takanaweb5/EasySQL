@@ -21,8 +21,9 @@ Private Const adCmdText = 1
 Private FSQL As String
 
 '*****************************************************************************
-'[イベント]　Class_Initialize
-'[ 概  要 ]　初期処理
+'[ 概  要 ]　データベースの接続文字列を取得する
+'[ 引  数 ]　なし
+'[ 戻り値 ]　データベース接続文字列
 '*****************************************************************************
 Private Function GetConnection() As String
     GetConnection = C_CONNECTSTR
@@ -99,6 +100,7 @@ On Error GoTo ErrHandle
     Application.ScreenUpdating = True
     
     ExecuteToRange = objRecordset.RecordCount
+    Call objRecordset.Close
     Exit Function
 ErrHandle:
     Call objRecordset.Close
@@ -141,8 +143,8 @@ On Error GoTo ErrHandle
         objRecordset.MoveNext
     Next
     
-    Call objRecordset.Close
     ExecuteToArray = vData()
+    Call objRecordset.Close
     Exit Function
 ErrHandle:
     Call objRecordset.Close

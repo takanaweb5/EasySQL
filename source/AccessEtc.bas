@@ -42,19 +42,25 @@ Public Sub ShowTables()
 End Sub
 
 '*****************************************************************************
+'[ 概  要 ]　データベースの接続文字列を取得する
+'[ 引  数 ]　なし
+'[ 戻り値 ]　データベース接続文字列
+'*****************************************************************************
+Private Function GetConnection(ByVal strFileName As String, ByVal strPassword As String) As String
+    GetConnection = C_CONNECTSTR
+    GetConnection = Replace(GetConnection, "{Provider}", C_PROVIDER)
+    GetConnection = Replace(GetConnection, "{FileName}", strFileName)
+    GetConnection = Replace(GetConnection, "{Password}", strPassword)
+End Function
+
+'*****************************************************************************
 '[ 概  要 ]　MDBファイルを作成する
 '[ 引  数 ]　MDBファイル名、パスワード
 '[ 戻り値 ]　なし
 '*****************************************************************************
-Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPassword = "")
-    Dim strCon As String
-    strCon = C_CONNECTSTR
-    strCon = Replace(strCon, "{Provider}", C_PROVIDER)
-    strCon = Replace(strCon, "{FileName}", strFileName)
-    strCon = Replace(strCon, "{Password}", strPassword)
-    
+Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPassword As String = "")
     With CreateObject("ADOX.Catalog")
-        Call .Create(strCon)
+        Call .Create(GetConnection(strFileName, strPassword))
     End With
 End Sub
 
@@ -63,17 +69,11 @@ End Sub
 '[ 引  数 ]　MDBファイル名、パスワード
 '[ 戻り値 ]　テーブル情報の２次元配列
 '*****************************************************************************
-Private Function GetTableNames(ByVal strFileName As String, Optional ByVal strPassword = "") As Variant
-    Dim strCon As String
-    strCon = C_CONNECTSTR
-    strCon = Replace(strCon, "{Provider}", C_PROVIDER)
-    strCon = Replace(strCon, "{FileName}", strFileName)
-    strCon = Replace(strCon, "{Password}", strPassword)
-    
+Private Function GetTableNames(ByVal strFileName As String, Optional ByVal strPassword As String = "") As Variant
     Dim objCatalog As Object
     Dim objTable As Object
     Set objCatalog = CreateObject("ADOX.Catalog")
-    objCatalog.ActiveConnection = strCon
+    objCatalog.ActiveConnection = GetConnection(strFileName, strPassword)
     
     ReDim Result(0 To objCatalog.Tables.Count, 1 To 2)
     
