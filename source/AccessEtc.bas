@@ -2,38 +2,38 @@ Attribute VB_Name = "AccessEtc"
 Option Explicit
 
 Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};"
-'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"  'Access2003ä»¥å‰ã®å½¢å¼ã®mdbãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹æ™‚ã¯ã“ã¡ã‚‰ã«ã™ã‚‹
+'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"  'Access2003ˆÈ‘O‚ÌŒ`®‚Ìmdbƒtƒ@ƒCƒ‹‚ğì¬‚·‚é‚Í‚±‚¿‚ç‚É‚·‚é
 Private Const C_PROVIDER = "Microsoft.ACE.OLEDB.12.0"
-Private Const C_WARNING = "/* å¿…è¦ã«å¿œã˜ã¦[ãƒ†ãƒ¼ãƒ–ãƒ«å]ã‚’å¤‰æ›´ã—ã¦ã‹ã‚‰SQLã‚’å®Ÿè¡Œã—ã¦ãã ã•ã„ */"
+Private Const C_WARNING = "/* •K—v‚É‰‚¶‚Ä[ƒe[ƒuƒ‹–¼]‚ğ•ÏX‚µ‚Ä‚©‚çSQL‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢ */"
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹ï¼ˆAccessãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿å¯ï¼‰
-'[ å¼•  æ•° ]ã€€ãªã—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] ƒf[ƒ^ƒx[ƒXƒtƒ@ƒCƒ‹‚ğì¬‚·‚éiAccessƒtƒ@ƒCƒ‹‚Ì‚İ‰Âj
+'[ˆø”] ‚È‚µ
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub CreateDB()
     Dim strDBName As String
-    strDBName = InputBox("ä½œæˆã™ã‚‹Accessãƒ•ã‚¡ã‚¤ãƒ«åã‚’ãƒ•ãƒ«ãƒ‘ã‚¹ã§å…¥åŠ›ã—ã¦ãã ã•ã„")
+    strDBName = InputBox("ì¬‚·‚éAccessƒtƒ@ƒCƒ‹–¼‚ğƒtƒ‹ƒpƒX‚Å“ü—Í‚µ‚Ä‚­‚¾‚³‚¢")
     If strDBName <> "" Then
         Call CreateMDBFile(strDBName)
     End If
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€Accessãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ†ãƒ¼ãƒ–ãƒ«æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹
-'[ å¼•  æ•° ]ã€€ãªã—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] Accessƒtƒ@ƒCƒ‹‚Ìƒe[ƒuƒ‹î•ñ‚ğ•\¦‚·‚é
+'[ˆø”] ‚È‚µ
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub ShowTables()
     Dim vDBName As Variant
     Dim objTopLeftCell As Range
-    @@@@@@@@@@Dim vTables As Variant
+    Dim vTables As Variant
         
-    vDBName = Application.GetOpenFilename("Accessãƒ•ã‚¡ã‚¤ãƒ«,*.*")
+    vDBName = Application.GetOpenFilename("Accessƒtƒ@ƒCƒ‹,*.*")
     If vDBName = False Then
         Exit Sub
     End If
-    Set objTopLeftCell = SelectCell("çµæœã‚’è¡¨ç¤ºã™ã‚‹ã‚»ãƒ«ã‚’é¸æŠã—ã¦ãã ã•ã„", Selection)
+    Set objTopLeftCell = SelectCell("Œ‹‰Ê‚ğ•\¦‚·‚éƒZƒ‹‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", Selection)
     If objTopLeftCell Is Nothing Then
         Exit Sub
     End If
@@ -42,9 +42,9 @@ Public Sub ShowTables()
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã®æ¥ç¶šæ–‡å­—åˆ—ã‚’å–å¾—ã™ã‚‹
-'[ å¼•  æ•° ]ã€€@@@@@@@@@@@@@@@@@@
-'[ æˆ»ã‚Šå€¤ ]ã€€ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹æ¥ç¶šæ–‡å­—åˆ—
+'[ŠT—v] ƒf[ƒ^ƒx[ƒX‚ÌÚ‘±•¶š—ñ‚ğæ“¾‚·‚é
+'[ˆø”] MDBƒtƒ@ƒCƒ‹–¼AƒpƒXƒ[ƒh
+'[–ß’l] ƒf[ƒ^ƒx[ƒXÚ‘±•¶š—ñ
 '*****************************************************************************
 Private Function GetConnection(ByVal strFileName As String, ByVal strPassword As String) As String
     GetConnection = C_CONNECTSTR
@@ -54,9 +54,9 @@ Private Function GetConnection(ByVal strFileName As String, ByVal strPassword As
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€MDBãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹
-'[ å¼•  æ•° ]ã€€MDBãƒ•ã‚¡ã‚¤ãƒ«åã€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] MDBƒtƒ@ƒCƒ‹‚ğì¬‚·‚é
+'[ˆø”] MDBƒtƒ@ƒCƒ‹–¼AƒpƒXƒ[ƒh
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPassword As String = "")
     With CreateObject("ADOX.Catalog")
@@ -65,9 +65,9 @@ Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPasswor
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€MDBãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã®ä¸€è¦§ã‚’å–å¾—ã™ã‚‹
-'[ å¼•  æ•° ]ã€€MDBãƒ•ã‚¡ã‚¤ãƒ«åã€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰
-'[ æˆ»ã‚Šå€¤ ]ã€€ãƒ†ãƒ¼ãƒ–ãƒ«æƒ…å ±ã®ï¼’æ¬¡å…ƒé…åˆ—
+'[ŠT—v] MDBƒtƒ@ƒCƒ‹‚Ìƒe[ƒuƒ‹‚Ìˆê——‚ğæ“¾‚·‚é
+'[ˆø”] MDBƒtƒ@ƒCƒ‹–¼AƒpƒXƒ[ƒh
+'[–ß’l] ƒe[ƒuƒ‹î•ñ‚Ì‚QŸŒ³”z—ñ
 '*****************************************************************************
 Private Function GetTableNames(ByVal strFileName As String, Optional ByVal strPassword As String = "") As Variant
     Dim objCatalog As Object
@@ -77,11 +77,11 @@ Private Function GetTableNames(ByVal strFileName As String, Optional ByVal strPa
     
     ReDim Result(0 To objCatalog.Tables.Count, 1 To 2)
     
-    'è¦‹å‡ºã—è¨­å®š
-    Result(0, 1) = "ãƒ†ãƒ¼ãƒ–ãƒ«å"
-    Result(0, 2) = "ã‚¿ã‚¤ãƒ—"
+    'Œ©o‚µİ’è
+    Result(0, 1) = "ƒe[ƒuƒ‹–¼"
+    Result(0, 2) = "ƒ^ƒCƒv"
     
-    'æ˜ç´°ã®è¨­å®š
+    '–¾×‚Ìİ’è
     Dim i As Long
     For Each objTable In objCatalog.Tables
         If objTable.Type <> "SYSTEM TABLE" And objTable.Type <> "ACCESS TABLE" Then
@@ -94,35 +94,35 @@ Private Function GetTableNames(ByVal strFileName As String, Optional ByVal strPa
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ãƒ†ãƒ¼ãƒ–ãƒ«ã‚¤ãƒ³ãƒãƒ¼ãƒˆç”¨ã®SQLã‚’ä½œæˆã™ã‚‹
-'[ å¼•  æ•° ]ã€€ãªã—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] ƒe[ƒuƒ‹ƒCƒ“ƒ|[ƒg—p‚ÌSQL‚ğì¬‚·‚é
+'[ˆø”] ‚È‚µ
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub MakeImportSQL()
     Dim vDBName As Variant
-    vDBName = Application.GetOpenFilename("Accessãƒ•ã‚¡ã‚¤ãƒ«,*.*")
+    vDBName = Application.GetOpenFilename("Accessƒtƒ@ƒCƒ‹,*.*")
     If vDBName = False Then
         Exit Sub
     End If
     
     Dim objTable As Range
-    Set objTable = SelectCell("ã‚¤ãƒ³ãƒãƒ¼ãƒˆã™ã‚‹ãƒ‡ãƒ¼ã‚¿é ˜åŸŸã‚’é¸æŠã—ã¦ãã ã•ã„", Selection)
+    Set objTable = SelectCell("ƒCƒ“ƒ|[ƒg‚·‚éƒf[ƒ^—Ìˆæ‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", Selection)
     If objTable Is Nothing Then
         Exit Sub
     End If
 
     Dim lngSelect As Long
     Dim strMsg As String
-    strMsg = "ã„ãšã‚Œã‹ã‚’é¸æŠã—ã¦ä¸‹ã•ã„" & vbCrLf
-    strMsg = strMsg & "ã€€ã€Œ ã¯ã„ ã€ï½¥ï½¥ï½¥ï½¥ æ—¢å­˜ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã«è¿½åŠ ã™ã‚‹" & vbCrLf
-    strMsg = strMsg & "ã€€ã€Œã„ã„ãˆã€ï½¥ï½¥ï½¥ï½¥ æ–°ã—ããƒ†ãƒ¼ãƒ–ãƒ«ã‚’ä½œæˆã™ã‚‹"
+    strMsg = "‚¢‚¸‚ê‚©‚ğ‘I‘ğ‚µ‚Ä‰º‚³‚¢" & vbCrLf
+    strMsg = strMsg & "@u ‚Í‚¢ v¥¥¥¥ Šù‘¶‚Ìƒe[ƒuƒ‹‚É’Ç‰Á‚·‚é" & vbCrLf
+    strMsg = strMsg & "@u‚¢‚¢‚¦v¥¥¥¥ V‚µ‚­ƒe[ƒuƒ‹‚ğì¬‚·‚é"
     lngSelect = MsgBox(strMsg, vbYesNoCancel + vbDefaultButton2)
     If lngSelect = vbCancel Then
         Exit Sub
     End If
     
     Dim strDB As String
-    strDB = "[MS ACCESS;DATABASE={FileName}].[ãƒ†ãƒ¼ãƒ–ãƒ«å]"
+    strDB = "[MS ACCESS;DATABASE={FileName}].[ƒe[ƒuƒ‹–¼]"
     strDB = Replace(strDB, "{FileName}", vDBName)
     
     Dim strFROM As String
@@ -146,29 +146,29 @@ Public Sub MakeImportSQL()
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ãƒ†ãƒ¼ãƒ–ãƒ«å‰Šé™¤ç”¨ã®SQLã‚’ä½œæˆã™ã‚‹
-'[ å¼•  æ•° ]ã€€ãªã—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] ƒe[ƒuƒ‹íœ—p‚ÌSQL‚ğì¬‚·‚é
+'[ˆø”] ‚È‚µ
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub MakeDeleteTableSQL()
     Dim vDBName As Variant
-    vDBName = Application.GetOpenFilename("Accessãƒ•ã‚¡ã‚¤ãƒ«,*.*")
+    vDBName = Application.GetOpenFilename("Accessƒtƒ@ƒCƒ‹,*.*")
     If vDBName = False Then
         Exit Sub
     End If
     
     Dim lngSelect As Long
     Dim strMsg As String
-    strMsg = "ã„ãšã‚Œã‹ã‚’é¸æŠã—ã¦ä¸‹ã•ã„" & vbCrLf
-    strMsg = strMsg & "ã€€ã€Œ ã¯ã„ ã€ï½¥ï½¥ï½¥ï½¥ ãƒ†ãƒ¼ãƒ–ãƒ«ã®ãƒ‡ãƒ¼ã‚¿ã‚’ã™ã¹ã¦å‰Šé™¤ã™ã‚‹" & vbCrLf
-    strMsg = strMsg & "ã€€ã€Œã„ã„ãˆã€ï½¥ï½¥ï½¥ï½¥ ãƒ†ãƒ¼ãƒ–ãƒ«è‡ªä½“ã‚’å‰Šé™¤ã™ã‚‹"
+    strMsg = "‚¢‚¸‚ê‚©‚ğ‘I‘ğ‚µ‚Ä‰º‚³‚¢" & vbCrLf
+    strMsg = strMsg & "@u ‚Í‚¢ v¥¥¥¥ ƒe[ƒuƒ‹‚Ìƒf[ƒ^‚ğ‚·‚×‚Äíœ‚·‚é" & vbCrLf
+    strMsg = strMsg & "@u‚¢‚¢‚¦v¥¥¥¥ ƒe[ƒuƒ‹©‘Ì‚ğíœ‚·‚é"
     lngSelect = MsgBox(strMsg, vbYesNoCancel + vbDefaultButton2)
     If lngSelect = vbCancel Then
         Exit Sub
     End If
     
     Dim strDB As String
-    strDB = "[MS ACCESS;DATABASE={FileName}].[ãƒ†ãƒ¼ãƒ–ãƒ«å]"
+    strDB = "[MS ACCESS;DATABASE={FileName}].[ƒe[ƒuƒ‹–¼]"
     strDB = Replace(strDB, "{FileName}", vDBName)
     
     Dim strSQL As String
@@ -183,13 +183,13 @@ Public Sub MakeDeleteTableSQL()
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã«å‡ºåŠ›ã™ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ç·¨é›†ã™ã‚‹
-'[ å¼•  æ•° ]ã€€ãªã—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] ƒ_ƒCƒAƒƒO‚Éo—Í‚·‚éƒƒbƒZ[ƒW‚ğ•ÒW‚·‚é
+'[ˆø”] SQL
+'[–ß’l] ƒ_ƒCƒAƒƒO‚Éo—Í‚·‚éƒƒbƒZ[ƒW
 '*****************************************************************************
 Private Function GetMessage(ByVal strSQL As String) As String
-    GetMessage = "ä»¥ä¸‹ã®SQLã‚’ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«ã‚³ãƒ”ãƒ¼ã—ã¾ã—ãŸã€‚" & vbCrLf
-    GetMessage = GetMessage & "å¿…è¦ã«å¿œã˜ã¦ãƒ†ãƒ¼ãƒ–ãƒ«åã‚’å¤‰æ›´ã—ã¦é©ç”¨ãªã‚»ãƒ«ã«è²¼ã‚Šã¤ã‘ã¦ã€ŒSQLå®Ÿè¡Œã€ã‚³ãƒãƒ³ãƒ‰ã‚’å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚" & vbCrLf
+    GetMessage = "ˆÈ‰º‚ÌSQL‚ğƒNƒŠƒbƒvƒ{[ƒh‚ÉƒRƒs[‚µ‚Ü‚µ‚½B" & vbCrLf
+    GetMessage = GetMessage & "•K—v‚É‰‚¶‚Äƒe[ƒuƒ‹–¼‚ğ•ÏX‚µ‚Ä“K—p‚ÈƒZƒ‹‚É“\‚è‚Â‚¯‚ÄuSQLÀsvƒRƒ}ƒ“ƒh‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢B" & vbCrLf
     GetMessage = GetMessage & strSQL
 End Function
 

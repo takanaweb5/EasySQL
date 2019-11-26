@@ -10,8 +10,8 @@ Attribute VB_Exposed = True
 Option Explicit
 
 '*****************************************************************************
-'[イベント]　AddinInstall
-'[ 概  要 ]　アドインのインストール時に実行される
+'[イベント] AddinInstall
+'[概要] アドインのインストール時に実行される
 '*****************************************************************************
 Private Sub Workbook_AddinInstall()
     On Error Resume Next
@@ -92,8 +92,8 @@ Private Sub Workbook_AddinInstall()
 End Sub
 
 '*****************************************************************************
-'[イベント]　AddinUninstall
-'[ 概  要 ]　アドインのアンインストール時に実行される
+'[イベント] AddinUninstall
+'[概要] アドインのアンインストール時に実行される
 '*****************************************************************************
 Private Sub Workbook_AddinUninstall()
     On Error Resume Next

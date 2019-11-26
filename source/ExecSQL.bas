@@ -2,9 +2,9 @@ Attribute VB_Name = "ExecSQL"
 Option Explicit
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€é¸æŠã•ã‚ŒãŸã‚»ãƒ«ã‚’å…ƒã«SELECTæ–‡ã®ã²ãªå½¢ã‚’ä½œæˆã™ã‚‹
-'[ å¼•  æ•° ]ã€€ãªã—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] ‘I‘ğ‚³‚ê‚½ƒZƒ‹‚ğŒ³‚ÉSELECT•¶‚Ì‚Ğ‚ÈŒ`‚ğì¬‚·‚é
+'[ˆø”] ‚È‚µ
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub MakeSQL()
     Dim objSelection As Range
@@ -23,7 +23,7 @@ Public Sub MakeSQL()
         Exit Sub
     End If
         
-    'SELECTå¥ã®è¨­å®š
+    'SELECT‹å‚Ìİ’è
     For Each objArea In objSelection.Areas
         For i = 1 To objArea.Columns.Count
             If strSELECT = "" Then
@@ -35,7 +35,7 @@ Public Sub MakeSQL()
         Next
     Next
 
-    'FROMå¥ã®è¨­å®š
+    'FROM‹å‚Ìİ’è
     If objSelection.Areas.Count = 1 And objSelection.Rows.Count > 1 Then
         strFROM = Replace("  FROM [{Sheet}${Range}]", "{Sheet}", objSelection.Worksheet.Name)
         strFROM = Replace(strFROM, "{Range}", objSelection.AddressLocal(False, False, xlA1))
@@ -43,7 +43,7 @@ Public Sub MakeSQL()
         strFROM = Replace("  FROM [{Sheet}$]", "{Sheet}", objSelection.Worksheet.Name)
     End If
     
-    'ãã®ä»–ã®å¥ã®è­˜åˆ¥å­ã®ã¿è¨­å®š
+    '‚»‚Ì‘¼‚Ì‹å‚Ì¯•Êq‚Ì‚İİ’è
     strSQL = strSELECT & vbCrLf & _
                strFROM & vbCrLf & _
                " WHERE " & vbCrLf & _
@@ -53,14 +53,14 @@ Public Sub MakeSQL()
     
     Call SetClipbordText(strSQL)
     Dim strMsg As String
-    strMsg = "ä»¥ä¸‹ã®SQLã‚’ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«ã‚³ãƒ”ãƒ¼ã—ã¾ã—ãŸã€‚" & vbCrLf & strSQL
+    strMsg = "ˆÈ‰º‚ÌSQL‚ğƒNƒŠƒbƒvƒ{[ƒh‚ÉƒRƒs[‚µ‚Ü‚µ‚½B" & vbCrLf & strSQL
     Call MsgBox(strMsg)
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«ãƒ†ã‚­ã‚¹ãƒˆã‚’è¨­å®šã™ã‚‹
-'[ å¼•  æ•° ]ã€€è¨­å®šã™ã‚‹æ–‡å­—åˆ—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] ƒNƒŠƒbƒvƒ{[ƒh‚ÉƒeƒLƒXƒg‚ğİ’è‚·‚é
+'[ˆø”] İ’è‚·‚é•¶š—ñ
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub SetClipbordText(ByVal strText As String)
 On Error GoTo ErrHandle
@@ -72,13 +72,13 @@ ErrHandle:
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€SQLæ–‡ã‚’å®Ÿè¡Œã™ã‚‹
-'[ å¼•  æ•° ]ã€€ãªã—
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] SQL•¶‚ğÀs‚·‚é
+'[ˆø”] ‚È‚µ
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub ExecuteSQL()
     If Dir(ActiveWorkbook.FullName) = "" Then
-        Call MsgBox("ä¸€åº¦ã‚‚ä¿å­˜ã•ã‚Œã¦ã„ãªã„ãƒ•ã‚¡ã‚¤ãƒ«ã§ã¯å®Ÿè¡Œã§ãã¾ã›ã‚“")
+        Call MsgBox("ˆê“x‚à•Û‘¶‚³‚ê‚Ä‚¢‚È‚¢ƒtƒ@ƒCƒ‹‚Å‚ÍÀs‚Å‚«‚Ü‚¹‚ñ")
         Exit Sub
     End If
     
@@ -92,7 +92,7 @@ Public Sub ExecuteSQL()
     Set objCurrentSheet = ActiveSheet
     
     Dim objSQLCell As Range
-    Set objSQLCell = SelectCell("SQLã®å…¥åŠ›ã•ã‚ŒãŸã‚»ãƒ«ã‚’é¸æŠã—ã¦ãã ã•ã„", Selection)
+    Set objSQLCell = SelectCell("SQL‚Ì“ü—Í‚³‚ê‚½ƒZƒ‹‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", Selection)
     If objSQLCell Is Nothing Then
         Exit Sub
     Else
@@ -109,21 +109,21 @@ Public Sub ExecuteSQL()
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€SELECTæ–‡ã‹ã©ã†ã‹åˆ¤å®šã™ã‚‹
-'[ å¼•  æ•° ]ã€€SQL
-'[ æˆ»ã‚Šå€¤ ]ã€€Trueï¼šSELECTæ–‡
+'[ŠT—v] SELECT•¶‚©‚Ç‚¤‚©”»’è‚·‚é
+'[ˆø”] SQL
+'[–ß’l] TrueFSELECT•¶
 '*****************************************************************************
 Private Function IsSelect(ByVal strSQL As String) As Boolean
     strSQL = DeleteEtc(strSQL)
     strSQL = UCase(strSQL)
-    strSQL = Replace(strSQL, vbLf, Chr(0))  'æ”¹è¡Œã‚’Chr(0)ã«å¤‰æ›
+    strSQL = Replace(strSQL, vbLf, Chr(0))  '‰üs‚ğChr(0)‚É•ÏŠ·
     strSQL = Trim(strSQL)
     If Left(strSQL, 6) <> "SELECT" And Left(strSQL, 9) <> "TRANSFORM" Then
         IsSelect = False
         Exit Function
     End If
     
-    'SELECT * INTO æ–‡ã¯ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã‚’æ›´æ–°ã™ã‚‹ãŸã‚ã€Falseã¨ã™ã‚‹
+    'SELECT * INTO •¶‚Íƒf[ƒ^ƒx[ƒX‚ğXV‚·‚é‚½‚ßAFalse‚Æ‚·‚é
     If FindINTO(strSQL) = True Then
         IsSelect = False
     Else
@@ -132,9 +132,9 @@ Private Function IsSelect(ByVal strSQL As String) As Boolean
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€SQLã®ã‚³ãƒ¡ãƒ³ãƒˆã‚„æ–‡å­—åˆ—ãƒªãƒ†ãƒ©ãƒ«ã‚’å‰Šé™¤ã™ã‚‹
-'[ å¼•  æ•° ]ã€€ã‚³ãƒ¡ãƒ³ãƒˆå‰Šé™¤å‰ã®SQL
-'[ æˆ»ã‚Šå€¤ ]ã€€ã‚³ãƒ¡ãƒ³ãƒˆå‰Šé™¤å¾Œã®SQL
+'[ŠT—v] SQL‚ÌƒRƒƒ“ƒg‚â•¶š—ñƒŠƒeƒ‰ƒ‹‚ğíœ‚·‚é
+'[ˆø”] ƒRƒƒ“ƒgíœ‘O‚ÌSQL
+'[–ß’l] ƒRƒƒ“ƒgíœŒã‚ÌSQL
 '*****************************************************************************
 Private Function DeleteEtc(ByVal strSQL As String) As String
 On Error GoTo ErrHandle
@@ -142,7 +142,7 @@ On Error GoTo ErrHandle
     Set objRegExp = CreateObject("VBScript.RegExp")
     objRegExp.Global = True
     
-    ' 'xxx' or "xxx" or [xxx] ã«å«ã¾ã‚Œã‚‹æ–‡å­—åˆ—ã¯INTOã‚’å«ã‚ã¦ã™ã¹ã¦å‰Šé™¤ã™ã‚‹
+    ' 'xxx' or "xxx" or [xxx] ‚ÉŠÜ‚Ü‚ê‚é•¶š—ñ‚ÍINTO‚ğŠÜ‚ß‚Ä‚·‚×‚Äíœ‚·‚é
     objRegExp.Pattern = "'.+?'|"".+?""|\[.+?\]"
     strSQL = objRegExp.Replace(strSQL, "")
 ErrHandle:
@@ -150,93 +150,93 @@ ErrHandle:
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€INTOå¥ãŒã‚ã‚‹ã‹ã©ã†ã‹åˆ¤å®šã™ã‚‹
-'[ å¼•  æ•° ]ã€€SQL
-'[ æˆ»ã‚Šå€¤ ]ã€€Trueï¼šINTOå¥ã‚ã‚Š
+'[ŠT—v] INTO‹å‚ª‚ ‚é‚©‚Ç‚¤‚©”»’è‚·‚é
+'[ˆø”] SQL
+'[–ß’l] TrueFINTO‹å‚ ‚è
 '*****************************************************************************
 Private Function FindINTO(ByVal strSQL As String) As Boolean
 On Error GoTo ErrHandle
     Dim objRegExp As Object
     Set objRegExp = CreateObject("VBScript.RegExp")
     
-    'å˜èªã®INTOã‚’æ¤œç´¢
+    '’PŒê‚ÌINTO‚ğŒŸõ
     objRegExp.Pattern = "\bINTO\b"
     FindINTO = objRegExp.Test(strSQL)
 ErrHandle:
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€DDLã¾ãŸã¯DMLã®SQLã‚’å®Ÿè¡Œã™ã‚‹
-'[ å¼•  æ•° ]ã€€SQL
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] DDL‚Ü‚½‚ÍDML‚ÌSQL‚ğÀs‚·‚é
+'[ˆø”] SQL
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Private Sub Execute(ByVal strSQL As String)
 On Error GoTo ErrHandle
-    'SQLã®æ§‹æ–‡ãƒã‚§ãƒƒã‚¯ã‚’å®Ÿæ–½ã™ã‚‹
+    'SQL‚Ì\•¶ƒ`ƒFƒbƒN‚ğÀ{‚·‚é
     Dim clsDBAccess  As New DBAccess
     clsDBAccess.SQL = strSQL
     Call clsDBAccess.CheckSQL
     
-    'ã‚³ãƒãƒ³ãƒ‰ã‚’å®Ÿè¡Œ
+    'ƒRƒ}ƒ“ƒh‚ğÀs
     Dim dblTime As Double
     Dim lngRecCount As Long
     dblTime = Timer()
     lngRecCount = clsDBAccess.Execute
-    Call MsgBox("æ›´æ–°ä»¶æ•°ã¯ " & lngRecCount & " ä»¶ã§ã™" & vbCrLf & vbCrLf & _
-                "å®Ÿè¡Œæ™‚é–“ï¼š" & Int(Timer() - dblTime) & " ç§’")
+    Call MsgBox("XVŒ”‚Í " & lngRecCount & " Œ‚Å‚·" & vbCrLf & vbCrLf & _
+                "ÀsŠÔF" & Int(Timer() - dblTime) & " •b")
     Exit Sub
 ErrHandle:
-    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
+    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€SELECTæ–‡ã®çµæœã‚’è¡¨å½¢å¼ã§ã‚»ãƒ«ã«å±•é–‹ã™ã‚‹
-'[ å¼•  æ•° ]ã€€SQL
-'[ æˆ»ã‚Šå€¤ ]ã€€ãªã—
+'[ŠT—v] SELECT•¶‚ÌŒ‹‰Ê‚ğ•\Œ`®‚ÅƒZƒ‹‚É“WŠJ‚·‚é
+'[ˆø”] SQL
+'[–ß’l] ‚È‚µ
 '*****************************************************************************
 Private Sub ShowRecord(ByVal strSQL As String)
 On Error GoTo ErrHandle
-    'ã‚»ãƒ«ã‚’é¸æŠã•ã›ã‚‹
+    'ƒZƒ‹‚ğ‘I‘ğ‚³‚¹‚é
     Dim objTopLeftCell As Range
-    Set objTopLeftCell = SelectCell("çµæœã‚’è¡¨ç¤ºã™ã‚‹ã‚»ãƒ«ã‚’é¸æŠã—ã¦ãã ã•ã„", Selection)
+    Set objTopLeftCell = SelectCell("Œ‹‰Ê‚ğ•\¦‚·‚éƒZƒ‹‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", Selection)
     If objTopLeftCell Is Nothing Then
         Exit Sub
     Else
-        'é¸æŠé ˜åŸŸã®å·¦ä¸Šã®ã‚»ãƒ«ã‚’è¨­å®š
+        '‘I‘ğ—Ìˆæ‚Ì¶ã‚ÌƒZƒ‹‚ğİ’è
         Set objTopLeftCell = objTopLeftCell.Cells(1)
     End If
     
-    'çµæœã®ã‚·ãƒ¼ãƒˆã‚’è¡¨ç¤ºã—ã¦ã€çµæœã®ã‚»ãƒ«ã‚’é¸æŠ
+    'Œ‹‰Ê‚ÌƒV[ƒg‚ğ•\¦‚µ‚ÄAŒ‹‰Ê‚ÌƒZƒ‹‚ğ‘I‘ğ
     Call objTopLeftCell.Worksheet.Activate
     Call objTopLeftCell.Select
     
-    'SQLã®æ§‹æ–‡ãƒã‚§ãƒƒã‚¯ã‚’å®Ÿæ–½ã™ã‚‹
+    'SQL‚Ì\•¶ƒ`ƒFƒbƒN‚ğÀ{‚·‚é
     Dim clsDBAccess  As New DBAccess
     clsDBAccess.SQL = strSQL
     Call clsDBAccess.CheckSQL
 
-    'SELECTæ–‡ã®å®Ÿè¡Œçµæœã®ãƒ¬ã‚³ãƒ¼ãƒ‰ã‚»ãƒƒãƒˆã‚’ã‚»ãƒ«ã«è¨­å®š
+    'SELECT•¶‚ÌÀsŒ‹‰Ê‚ÌƒŒƒR[ƒhƒZƒbƒg‚ğƒZƒ‹‚Éİ’è
     Dim dblTime As Double
     Dim lngRecCount As Long
     dblTime = Timer()
     lngRecCount = clsDBAccess.ExecuteToRange(objTopLeftCell)
-    Call MsgBox("ãƒ¬ã‚³ãƒ¼ãƒ‰ä»¶æ•°ã¯ " & lngRecCount & " ä»¶ã§ã™" & vbCrLf & vbCrLf & _
-                "å®Ÿè¡Œæ™‚é–“ï¼š" & Int(Timer() - dblTime) & " ç§’")
+    Call MsgBox("ƒŒƒR[ƒhŒ”‚Í " & lngRecCount & " Œ‚Å‚·" & vbCrLf & vbCrLf & _
+                "ÀsŠÔF" & Int(Timer() - dblTime) & " •b")
     Exit Sub
 ErrHandle:
-    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
+    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ãƒ•ã‚©ãƒ¼ãƒ ã‚’è¡¨ç¤ºã—ã¦ã‚»ãƒ«ã‚’é¸æŠã•ã›ã‚‹
-'[ å¼•  æ•° ]ã€€strMsgï¼šè¡¨ç¤ºã™ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã€objCurrentCellï¼šåˆæœŸé¸æŠã•ã›ã‚‹ã‚»ãƒ«
-'[ æˆ»ã‚Šå€¤ ]ã€€é¸æŠã•ã‚ŒãŸã‚»ãƒ«ï¼ˆã‚­ãƒ£ãƒ³ã‚»ãƒ«æ™‚ã¯Nothingï¼‰
+'[ŠT—v] ƒtƒH[ƒ€‚ğ•\¦‚µ‚ÄƒZƒ‹‚ğ‘I‘ğ‚³‚¹‚é
+'[ˆø”] •\¦‚·‚éƒƒbƒZ[ƒWAobjCurrentCellF‰Šú‘I‘ğ‚³‚¹‚éƒZƒ‹
+'[–ß’l] ‘I‘ğ‚³‚ê‚½ƒZƒ‹iƒLƒƒƒ“ƒZƒ‹‚ÍNothingj
 '*****************************************************************************
 Public Function SelectCell(ByVal strMsg As String, ByRef objCurrentCell As Range) As Range
     Dim strCell As String
-    'ãƒ•ã‚©ãƒ¼ãƒ ã‚’è¡¨ç¤º
+    'ƒtƒH[ƒ€‚ğ•\¦
     With frmSelectCell
         .Label.Caption = strMsg
         Call objCurrentCell.Worksheet.Activate
@@ -256,27 +256,27 @@ Public Function SelectCell(ByVal strMsg As String, ByRef objCurrentCell As Range
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€SQLã®{A1}ã®éƒ¨åˆ†ã‚’A1ã‚»ãƒ«ã®ä¸­èº«ã§ç½®æ›ã™ã‚‹
-'            ãŸã ã—ã€{MYPATH}ã®éƒ¨åˆ†ã¯ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ã‚©ãƒ«ãƒ€ã«ç½®æ›ãˆã‚‹
-'                    {MYSHEET}ã®éƒ¨åˆ†ã¯SQLã®ã‚ã‚‹ã‚·ãƒ¼ãƒˆåã«ç½®æ›ãˆã‚‹
-'[ å¼•  æ•° ]ã€€SQLã®å…¥åŠ›ã•ã›ãŸã‚»ãƒ«
-'[ æˆ»ã‚Šå€¤ ]ã€€ã‚»ãƒ«ã®å‚ç…§å€¤ã‚’ç½®æ›ã—ãŸSQL
+'[ŠT—v] SQL‚Ì{A1}‚Ì•”•ª‚ğA1ƒZƒ‹‚Ì’†g‚Å’uŠ·‚·‚é
+'       ‚½‚¾‚µA{MYPATH}‚Ì•”•ª‚ÍƒJƒŒƒ“ƒgƒtƒHƒ‹ƒ_‚É’uŠ·‚¦‚é
+'               {MYSHEET}‚Ì•”•ª‚ÍSQL‚Ì‚ ‚éƒV[ƒg–¼‚É’uŠ·‚¦‚é
+'[ˆø”] SQL‚Ì“ü—Í‚³‚¹‚½ƒZƒ‹
+'[–ß’l] ƒZƒ‹‚ÌQÆ’l‚ğ’uŠ·‚µ‚½SQL
 '*****************************************************************************
 Public Function ReplaceCellRef(ByRef objSQLCell As Range) As String
-Attribute ReplaceCellRef.VB_Description = "ã‚»ãƒ«å‚ç…§ã®åæ˜ ã¨ã‚³ãƒ¡ãƒ³ãƒˆå‰Šé™¤ã‚’å®Ÿè¡Œã—ãŸå¾Œã®ã€ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«æ¸¡ã™SQLã‚’è¡¨ç¤ºã—ã¾ã™"
+Attribute ReplaceCellRef.VB_Description = "ƒZƒ‹QÆ‚Ì”½‰f‚ÆƒRƒƒ“ƒgíœ‚ğÀs‚µ‚½Œã‚ÌAƒf[ƒ^ƒx[ƒX‚É“n‚·SQL‚ğ•\¦‚µ‚Ü‚·"
 Attribute ReplaceCellRef.VB_ProcData.VB_Invoke_Func = " \n18"
 On Error GoTo ErrHandle
     Dim objRegExp  As Object
     Dim objMatch   As Object
     Dim strSubSQL  As String
     Dim strReplace As String
-    Dim Dummy As New DBAccess
+    Dim dummy As New DBAccess
     
     Set objRegExp = CreateObject("VBScript.RegExp")
     objRegExp.Global = True
     objRegExp.Pattern = "\{(.+?)\}"
     
-    ReplaceCellRef = Dummy.DeleteComment(GetRangeText(objSQLCell))
+    ReplaceCellRef = dummy.DeleteComment(GetRangeText(objSQLCell))
     If objRegExp.Test(ReplaceCellRef) Then
         For Each objMatch In objRegExp.Execute(ReplaceCellRef)
             strReplace = objMatch.SubMatches(0)
@@ -286,17 +286,16 @@ On Error GoTo ErrHandle
             Case "MYSHEET"
                 ReplaceCellRef = Replace(ReplaceCellRef, objMatch, objSQLCell.Worksheet.Name)
             Case Else
-                If IsCellAddress(strReplace) = True Then
-                    'åˆ¥ã®ã‚·ãƒ¼ãƒˆã®å‚ç…§ãŒã‚ã‚‹ã‹ã©ã†ã‹ã€€â€»ä¾‹ï¼š"Sheet1!A1"
-                    If InStr(1, strReplace, "!")@@@@@@@@@@@@@ = 0 Then
-                        'åŒä¸€ã‚·ãƒ¼ãƒˆå†…ã®ã‚»ãƒ«ã®å†…å®¹ã§ç½®æ›ãˆã‚‹ã€€â€»ä¾‹ï¼šRange("A1")
-                        strSubSQL = ReplaceCellRef(objSQLCell.Worksheet.Range(strReplace))
-                    Else
-                        'åˆ¥ã‚·ãƒ¼ãƒˆå†…ã®ã‚»ãƒ«ã®å†…å®¹ã§ç½®æ›ãˆã‚‹ã€€â€»ä¾‹ï¼šRange("Sheet1!A1")
-                        strSubSQL = ReplaceCellRef(Range(strReplace))
-                    End If
+                Select Case IsCellAddress(strReplace, objSQLCell.Worksheet)
+                Case 1 '“¯ˆêƒV[ƒg‚ÌƒZƒ‹‚Ì
+                    '“¯ˆêƒV[ƒg“à‚ÌƒZƒ‹‚Ì“à—e‚Å’uŠ·‚¦‚é@¦—áFRange("A1")“™
+                    strSubSQL = ReplaceCellRef(objSQLCell.Worksheet.Range(strReplace))
                     ReplaceCellRef = Replace(ReplaceCellRef, objMatch, strSubSQL)
-                End If
+                Case 2 '•ÊƒV[ƒg‚ÌƒZƒ‹‚Ì
+                    '•ÊƒV[ƒg“à‚ÌƒZƒ‹‚Ì“à—e‚Å’uŠ·‚¦‚é@¦—áFRange("Sheet1!A1")“™
+                    strSubSQL = ReplaceCellRef(Range(strReplace))
+                    ReplaceCellRef = Replace(ReplaceCellRef, objMatch, strSubSQL)
+                End Select
             End Select
         Next
     End If
@@ -304,39 +303,45 @@ ErrHandle:
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€strAddressãŒCellã‚’æŒ‡ã™ã‚¢ãƒ‰ãƒ¬ã‚¹ã‹ã©ã†ã‹
-'[ å¼•  æ•° ]ã€€ãƒã‚§ãƒƒã‚¯å¯¾è±¡ã®ã€ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’ç¤ºã™ã¯ãšã®æ–‡å­—åˆ—
-'[ æˆ»ã‚Šå€¤ ]ã€€Boolean
+'[ŠT—v] strAddress‚ªCell‚ğw‚·ƒAƒhƒŒƒX‚©‚Ç‚¤‚©
+'[ˆø”] ƒ`ƒFƒbƒN‘ÎÛ‚Ì•¶š—ñ(ƒAƒhƒŒƒX ‚Ü‚½‚Í –¼‘O)AƒJƒŒƒ“ƒgƒV[ƒg
+'[–ß’l] 0:NotƒAƒhƒŒƒXA1:ƒJƒŒƒ“ƒgƒV[ƒg‚ÌƒAƒhƒŒƒXA2:•ÊƒV[ƒg‚ÌƒAƒhƒŒƒX
 '*****************************************************************************
-Private Function IsCellAddress(ByVal strAddress As String) As Boolean
-On Error GoTo ErrHandle
+Private Function IsCellAddress(ByVal strAddress As String, ByRef objWorksheet As Worksheet) As Long
     If TypeOf Range(strAddress) Is Range Then
-        IsCellAddress = True
+    Else
+        IsCellAddress = 0
         Exit Function
     End If
+On Error GoTo ErrHandle
+    Dim dummy As Range
+    Set dummy = objWorksheet.Range(strAddress)  'ƒGƒ‰[‚È‚ç‚ÎA•ÊƒV[ƒg‚Æ”»’è
+    IsCellAddress = 1
+    Exit Function
 ErrHandle:
-    IsCellAddress = False
+    IsCellAddress = 2
+    Exit Function
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€SQLã®é¸æŠã•ã‚ŒãŸã‚»ãƒ«ã®å€¤ã‚’å–å¾—ã™ã‚‹
-'[ å¼•  æ•° ]ã€€SQLã®å…¥åŠ›ã•ã›ãŸRange
-'[ æˆ»ã‚Šå€¤ ]ã€€ã‚»ãƒ«ã®å€¤ï¼ˆè¤‡æ•°è¡Œã®æ™‚ï¼šå€¤ãŒåˆæœŸå€¤ã§ãªã„ã‚»ãƒ«ã®å€¤ã‚’æ”¹è¡Œã§é€£çµï¼‰
-'                    ï¼ˆè¤‡æ•°åˆ—ã®æ™‚ï¼šå€¤ãŒåˆæœŸå€¤ã§ãªã„ã‚»ãƒ«ã®å€¤ã‚’[]ã§ã¯ã•ã¿","ã§é€£çµï¼‰
+'[ŠT—v] SQL‚Ì‘I‘ğ‚³‚ê‚½ƒZƒ‹‚Ì’l‚ğæ“¾‚·‚é
+'[ˆø”] SQL‚Ì“ü—Í‚³‚¹‚½Range
+'[–ß’l] ƒZƒ‹‚Ì’li•¡”s‚ÌF’l‚ª‰Šú’l‚Å‚È‚¢ƒZƒ‹‚Ì’l‚ğ‰üs‚Å˜AŒ‹j
+'               i•¡”—ñ‚ÌF’l‚ª‰Šú’l‚Å‚È‚¢ƒZƒ‹‚Ì’l‚ğ[]‚Å‚Í‚³‚İ","‚Å˜AŒ‹j
 '*****************************************************************************
 Private Function GetRangeText(ByRef objRange As Range) As String
     Dim i As Long
     Dim strCellText As String
     
-    'å˜ä¸€ã‚»ãƒ«ã®æ™‚
+    '’PˆêƒZƒ‹‚Ì
     If objRange.Count = 1 Or objRange.Address = objRange(1, 1).MergeArea.Address Then
         GetRangeText = objRange(1).Text
         Exit Function
     End If
     
-    'è¦‹å‡ºã—é¸æŠæ™‚
+    'Œ©o‚µ‘I‘ğ
     If objRange.Rows.Count = 1 Or objRange.Rows.Count = Rows.Count Then
-        'åˆ—æ•°åˆ†LOOPã—ã€å„é …ç›®ã‚’ã‚«ãƒƒã‚³ã§ã¯ã•ã¿ã‚³ãƒ³ãƒã§é€£çµã€€ä¾‹ï¼š[å§“], [å]
+        '—ñ”•ªLOOP‚µAŠe€–Ú‚ğƒJƒbƒR‚Å‚Í‚³‚İƒRƒ“ƒ}‚Å˜AŒ‹@—áF[©], [–¼]
         For i = 1 To objRange.Columns.Count
             strCellText = objRange.Cells(1, i)
             If strCellText <> "" Then
@@ -348,7 +353,7 @@ Private Function GetRangeText(ByRef objRange As Range) As String
             End If
         Next
     Else
-        'è¡Œæ•°åˆ†LOOPã—ã€å„ã‚»ãƒ«ã®å€¤ã‚’æ”¹è¡Œã§é€£çµ
+        's”•ªLOOP‚µAŠeƒZƒ‹‚Ì’l‚ğ‰üs‚Å˜AŒ‹
         For i = 1 To objRange.Rows.Count
             strCellText = objRange.Cells(i, 1)
             If strCellText <> "" Then
@@ -363,57 +368,57 @@ Private Function GetRangeText(ByRef objRange As Range) As String
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€SQLã®çµæœã‚’2æ¬¡å…ƒé…åˆ—ã§å–å¾—ã™ã‚‹
-'[ å¼•  æ•° ]ã€€SQLã®å…¥åŠ›ã•ã‚ŒãŸã‚»ãƒ«ã€Dummy():å†è¨ˆç®—ã®ãƒˆãƒªã‚¬ãƒ¼ã«ã—ãŸã„ã‚»ãƒ«ãŒã‚ã‚Œã°è¨­å®šã™ã‚‹
-'[ æˆ»ã‚Šå€¤ ]ã€€å®Ÿè¡Œçµæœ(2æ¬¡å…ƒé…åˆ—)â€»ã‚»ãƒ«é–¢æ•°ã§é…åˆ—æ•°å¼å½¢å¼(Ctrl+Shift+Enter)ã§å–ã‚Šå‡ºã™
+'[ŠT—v] SQL‚ÌŒ‹‰Ê‚ğ2ŸŒ³”z—ñ‚Åæ“¾‚·‚é
+'[ˆø”] SQL‚Ì“ü—Í‚³‚ê‚½ƒZƒ‹ADummy():ÄŒvZ‚ÌƒgƒŠƒK[‚É‚µ‚½‚¢ƒZƒ‹‚ª‚ ‚ê‚Îİ’è‚·‚é
+'[–ß’l] ÀsŒ‹‰Ê(2ŸŒ³”z—ñ)¦ƒZƒ‹ŠÖ”‚Å”z—ñ”®Œ`®(Ctrl+Shift+Enter)‚Åæ‚èo‚·
 '*****************************************************************************
-Public Function GetSQLRecordset(ByRef objSQLCell As Range, ParamArray Dummy()) As Variant
-Attribute GetSQLRecordset.VB_Description = "SQLã®å®Ÿè¡Œçµæœã‚’2æ¬¡å…ƒé…åˆ—ã§è¿”ã—ã¾ã™\nç¯„å›²ã‚’æŒ‡å®šã—ã¦é…åˆ—æ•°å¼å½¢å¼(Ctrl+Shift+Enter)ã§å–ã‚Šå‡ºã—ã¦ãã ã•ã„"
+Public Function GetSQLRecordset(ByRef objSQLCell As Range, ParamArray dummy()) As Variant
+Attribute GetSQLRecordset.VB_Description = "SQL‚ÌÀsŒ‹‰Ê‚ğ2ŸŒ³”z—ñ‚Å•Ô‚µ‚Ü‚·\n”ÍˆÍ‚ğw’è‚µ‚Ä”z—ñ”®Œ`®(Ctrl+Shift+Enter)‚Åæ‚èo‚µ‚Ä‚­‚¾‚³‚¢"
 Attribute GetSQLRecordset.VB_ProcData.VB_Invoke_Func = " \n18"
 On Error GoTo ErrHandle
-    'SQLã‚’å–å¾—ã—ã€æ§‹æ–‡ãƒã‚§ãƒƒã‚¯ã‚’å®Ÿæ–½ã™ã‚‹
+    'SQL‚ğæ“¾‚µA\•¶ƒ`ƒFƒbƒN‚ğÀ{‚·‚é
     Dim clsDBAccess  As New DBAccess
     clsDBAccess.SQL = ReplaceCellRef(objSQLCell)
     Call clsDBAccess.CheckSQL
 
-    'SELECTæ–‡ã®å®Ÿè¡Œçµæœã®2æ¬¡å…ƒé…åˆ—ã‚’å–å¾—
+    'SELECT•¶‚ÌÀsŒ‹‰Ê‚Ì2ŸŒ³”z—ñ‚ğæ“¾
     GetSQLRecordset = clsDBAccess.ExecuteToArray()
     Exit Function
 ErrHandle:
-    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
+    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
     GetSQLRecordset = Err.Description
 End Function
 
 '*****************************************************************************
-'[ æ¦‚  è¦ ]ã€€ã‚»ãƒ«é–¢æ•°ç”¨ã®TextJoinã‚‚ã©ã
-'[ å¼•  æ•° ]ã€€ä¸¡ç«¯æ–‡å­—:ä¾‹ï¼š"'"â†’'ãƒ†ã‚­ã‚¹ãƒˆ'ã€""""â†’"ãƒ†ã‚­ã‚¹ãƒˆ"ã€"[]"â†’[ãƒ†ã‚­ã‚¹ãƒˆ]
-'ã€€ã€€ã€€ã€€ã€€ã€€åŒºåˆ‡ã‚Šæ–‡å­—:åŒºåˆ‡ã‚Šæ–‡å­—ï¼ˆ","ç­‰ï¼‰ã€
-'ã€€ã€€ã€€ã€€ã€€ã€€é€£çµã‚»ãƒ«():é€£çµã™ã‚‹ Range
-'[ æˆ»ã‚Šå€¤ ]ã€€é€£çµå¾Œã®æ–‡å­—åˆ—
+'[ŠT—v] ƒZƒ‹ŠÖ”—p‚ÌTextJoin‚à‚Ç‚«
+'[ˆø”] —¼’[•¶š:—áF"'"¨'ƒeƒLƒXƒg'A""""¨"ƒeƒLƒXƒg"A"[]"¨[ƒeƒLƒXƒg]
+'       ‹æØ‚è•¶š:‹æØ‚è•¶ši","“™jA
+'       ˜AŒ‹ƒZƒ‹():˜AŒ‹‚·‚é Range
+'[–ß’l] ˜AŒ‹Œã‚Ì•¶š—ñ
 '*****************************************************************************
-Public Function VALUEJOIN(ByVal ä¸¡ç«¯æ–‡å­— As String, ByVal åŒºåˆ‡ã‚Šæ–‡å­— As String, ParamArray é€£çµã‚»ãƒ«())
-Attribute VALUEJOIN.VB_Description = "ä»¥ä¸‹ã®ä¾‹ã®ã‚ˆã†ã«ã‚»ãƒ«ã®å€¤ã‚’åŒºåˆ‡ã‚Šæ–‡å­—ã§é€£çµã—ã¾ã™\nã€€ã€€'AAA','BBB','CCC'ã€€ã€€ã‚„ã€€ã€€[AAA],[BBB],[CCC]\nSQLã®INæ¼”ç®—å­ã®æ¡ä»¶ã®ç¾…åˆ—ãªã©ã«åˆ©ç”¨ã™ã‚‹ã¨ä¾¿åˆ©ã§ã™"
+Public Function VALUEJOIN(ByVal —¼’[•¶š As String, ByVal ‹æØ‚è•¶š As String, ParamArray ˜AŒ‹ƒZƒ‹())
+Attribute VALUEJOIN.VB_Description = "ˆÈ‰º‚Ì—á‚Ì‚æ‚¤‚ÉƒZƒ‹‚Ì’l‚ğ‹æØ‚è•¶š‚Å˜AŒ‹‚µ‚Ü‚·\n@@'AAA','BBB','CCC'@@‚â@@[AAA],[BBB],[CCC]\nSQL‚ÌIN‰‰Zq‚ÌğŒ‚Ì—…—ñ‚È‚Ç‚É—˜—p‚·‚é‚Æ•Ö—˜‚Å‚·"
 Attribute VALUEJOIN.VB_ProcData.VB_Invoke_Func = " \n18"
     Dim i       As Long
     Dim objCell As Range
-    Dim strL    As String 'å·¦ç«¯ã«ä»˜ã‘ã‚‹æ–‡å­—
-    Dim strR    As String 'å³ç«¯ã«ä»˜ã‘ã‚‹æ–‡å­—
+    Dim strL    As String '¶’[‚É•t‚¯‚é•¶š
+    Dim strR    As String '‰E’[‚É•t‚¯‚é•¶š
     
-    If Len(ä¸¡ç«¯æ–‡å­—) @@@@@@ã€€1 Then
-        strL = ä¸¡ç«¯æ–‡å­—
-        strR = ä¸¡ç«¯æ–‡å­—
+    If Len(—¼’[•¶š) <= 1 Then
+        strL = —¼’[•¶š
+        strR = —¼’[•¶š
     Else
-        strL = Left(ä¸¡ç«¯æ–‡å­—, Int(Len(ä¸¡ç«¯æ–‡å­—) / 2))
-        strR = Right(ä¸¡ç«¯æ–‡å­—, Int(Len(ä¸¡ç«¯æ–‡å­—) / 2))
+        strL = Left(—¼’[•¶š, Int(Len(—¼’[•¶š) / 2))
+        strR = Right(—¼’[•¶š, Int(Len(—¼’[•¶š) / 2))
     End If
     
-    For i = LBound(é€£çµã‚»ãƒ«) To UBound(é€£çµã‚»ãƒ«)
-        For Each objCell In é€£çµã‚»ãƒ«(i)
+    For i = LBound(˜AŒ‹ƒZƒ‹) To UBound(˜AŒ‹ƒZƒ‹)
+        For Each objCell In ˜AŒ‹ƒZƒ‹(i)
             If objCell.Value <> "" Then
-                VALUEJOIN = VALUEJOIN & åŒºåˆ‡ã‚Šæ–‡å­— & strL & objCell.Text & strR
+                VALUEJOIN = VALUEJOIN & ‹æØ‚è•¶š & strL & objCell.Text & strR
             End If
         Next
     Next
-    'å…ˆé ­ã®åŒºåˆ‡ã‚Šæ–‡å­—ã‚’å‰Šé™¤
-    VALUEJOIN = Mid(VALUEJOIN, Len(åŒºåˆ‡ã‚Šæ–‡å­—) + 1)
+    'æ“ª‚Ì‹æØ‚è•¶š‚ğíœ
+    VALUEJOIN = Mid(VALUEJOIN, Len(‹æØ‚è•¶š) + 1)
 End Function
