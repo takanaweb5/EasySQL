@@ -6,4 +6,5 @@ EXCELでかんたんにエクセルファイルやアクセスファイルに対
 
 
 ### ライセンス
-  MITライセンスに準拠します
+MITライセンスに準拠します
+Copyright (c) 2019 TAKAHASHI Naoki(JPN) 高橋
