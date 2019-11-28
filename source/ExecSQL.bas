@@ -270,13 +270,13 @@ On Error GoTo ErrHandle
     Dim objMatch   As Object
     Dim strSubSQL  As String
     Dim strReplace As String
-    Dim dummy As New DBAccess
+    Dim Dummy As New DBAccess
     
     Set objRegExp = CreateObject("VBScript.RegExp")
     objRegExp.Global = True
     objRegExp.Pattern = "\{(.+?)\}"
     
-    ReplaceCellRef = dummy.DeleteComment(GetRangeText(objSQLCell))
+    ReplaceCellRef = Dummy.DeleteComment(GetRangeText(objSQLCell))
     If objRegExp.Test(ReplaceCellRef) Then
         For Each objMatch In objRegExp.Execute(ReplaceCellRef)
             strReplace = objMatch.SubMatches(0)
@@ -305,22 +305,23 @@ End Function
 '*****************************************************************************
 '[概要] strAddressがCellを指すアドレスかどうか
 '[引数] チェック対象の文字列(アドレス または 名前)、カレントシート
-'[戻値] 0:Notアドレス、1:カレントシートのアドレス、2:別シートのアドレス
+'[戻値] 0:無効なアドレス、1:カレントシートのアドレス、2:別シートのアドレス
 '*****************************************************************************
 Private Function IsCellAddress(ByVal strAddress As String, ByRef objWorksheet As Worksheet) As Long
-    If TypeOf Range(strAddress) Is Range Then
+    Dim Dummy As Range
+    On Error Resume Next
+    Set Dummy = Range(strAddress)
+    If Err.Number <> 0 Then
+        IsCellAddress = 0 'エラーの時は無効なアドレス
     Else
-        IsCellAddress = 0
-        Exit Function
+        Set Dummy = objWorksheet.Range(strAddress)
+        If Err.Number <> 0 Then
+            IsCellAddress = 2 'エラーの時は別シートのアドレス
+        Else
+            IsCellAddress = 1 'エラーでなければカレントシートのアドレス
+        End If
     End If
-On Error GoTo ErrHandle
-    Dim dummy As Range
-    Set dummy = objWorksheet.Range(strAddress)  'エラーならば、別シートと判定
-    IsCellAddress = 1
-    Exit Function
-ErrHandle:
-    IsCellAddress = 2
-    Exit Function
+    On Error GoTo 0
 End Function
 
 '*****************************************************************************
@@ -372,7 +373,7 @@ End Function
 '[引数] SQLの入力されたセル、Dummy():再計算のトリガーにしたいセルがあれば設定する
 '[戻値] 実行結果(2次元配列)※セル関数で配列数式形式(Ctrl+Shift+Enter)で取り出す
 '*****************************************************************************
-Public Function GetSQLRecordset(ByRef objSQLCell As Range, ParamArray dummy()) As Variant
+Public Function GetSQLRecordset(ByRef objSQLCell As Range, ParamArray Dummy()) As Variant
 Attribute GetSQLRecordset.VB_Description = "SQLの実行結果を2次元配列で返します\n範囲を指定して配列数式形式(Ctrl+Shift+Enter)で取り出してください"
 Attribute GetSQLRecordset.VB_ProcData.VB_Invoke_Func = " \n18"
 On Error GoTo ErrHandle
