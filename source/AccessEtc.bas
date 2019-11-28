@@ -26,19 +26,34 @@ End Sub
 '*****************************************************************************
 Public Sub ShowTables()
     Dim vDBName As Variant
-    Dim objTopLeftCell As Range
-    Dim vTables As Variant
-        
     vDBName = Application.GetOpenFilename("Accessファイル,*.*")
     If vDBName = False Then
         Exit Sub
     End If
+    Dim objTopLeftCell As Range
     Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
     If objTopLeftCell Is Nothing Then
         Exit Sub
     End If
-    vTables = GetTableNames(vDBName)
-    objTopLeftCell(1).Resize(UBound(vTables, 1) + 1, 2) = vTables
+    
+    '見出し設定
+    objTopLeftCell.Cells(1, 1) = "テーブル名"
+    objTopLeftCell.Cells(1, 2) = "タイプ"
+    
+    '明細の設定
+    Dim objCatalog As Object
+    Dim objTable As Object
+    Set objCatalog = CreateObject("ADOX.Catalog")
+    objCatalog.ActiveConnection = GetConnection(vDBName, "")
+    Dim i As Long
+    i = 1
+    For Each objTable In objCatalog.Tables
+        If objTable.Type <> "SYSTEM TABLE" And objTable.Type <> "ACCESS TABLE" Then
+            i = i + 1
+            objTopLeftCell.Cells(i, 1) = objTable.Name
+            objTopLeftCell.Cells(i, 2) = objTable.Type
+        End If
+    Next
 End Sub
 
 '*****************************************************************************
@@ -63,35 +78,6 @@ Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPasswor
         Call .Create(GetConnection(strFileName, strPassword))
     End With
 End Sub
-
-'*****************************************************************************
-'[概要] MDBファイルのテーブルの一覧を取得する
-'[引数] MDBファイル名、パスワード
-'[戻値] テーブル情報の２次元配列
-'*****************************************************************************
-Private Function GetTableNames(ByVal strFileName As String, Optional ByVal strPassword As String = "") As Variant
-    Dim objCatalog As Object
-    Dim objTable As Object
-    Set objCatalog = CreateObject("ADOX.Catalog")
-    objCatalog.ActiveConnection = GetConnection(strFileName, strPassword)
-    
-    ReDim Result(0 To objCatalog.Tables.Count, 1 To 2)
-    
-    '見出し設定
-    Result(0, 1) = "テーブル名"
-    Result(0, 2) = "タイプ"
-    
-    '明細の設定
-    Dim i As Long
-    For Each objTable In objCatalog.Tables
-        If objTable.Type <> "SYSTEM TABLE" And objTable.Type <> "ACCESS TABLE" Then
-            i = i + 1
-            Result(i, 1) = objTable.Name
-            Result(i, 2) = objTable.Type
-        End If
-    Next
-    GetTableNames = Result
-End Function
 
 '*****************************************************************************
 '[概要] テーブルインポート用のSQLを作成する
