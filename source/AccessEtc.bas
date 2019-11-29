@@ -4,7 +4,7 @@ Option Explicit
 Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};"
 'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"  'Access2003ˆÈ‘O‚ÌŒ`®‚Ìmdbƒtƒ@ƒCƒ‹‚ğì¬‚·‚é‚Í‚±‚¿‚ç‚É‚·‚é
 Private Const C_PROVIDER = "Microsoft.ACE.OLEDB.12.0"
-Private Const C_WARNING = "/* •K—v‚É‰‚¶‚Ä[ƒe[ƒuƒ‹–¼]‚ğ•ÏX‚µ‚Ä‚©‚çSQL‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢ */"
+Private Const C_WARNING = "/* [...]•”•ª‚ğƒe[ƒuƒ‹–¼‚É•ÏX‚µ‚Ä‚©‚çSQL‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢ */"
 
 '*****************************************************************************
 '[ŠT—v] ƒf[ƒ^ƒx[ƒXƒtƒ@ƒCƒ‹‚ğì¬‚·‚éiAccessƒtƒ@ƒCƒ‹‚Ì‚İ‰Âj
@@ -12,11 +12,16 @@ Private Const C_WARNING = "/* •K—v‚É‰‚¶‚Ä[ƒe[ƒuƒ‹–¼]‚ğ•ÏX‚µ‚Ä‚©‚çSQL‚ğÀs‚µ‚
 '[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub CreateDB()
+On Error GoTo ErrHandle
     Dim strDBName As String
     strDBName = InputBox("ì¬‚·‚éAccessƒtƒ@ƒCƒ‹–¼‚ğƒtƒ‹ƒpƒX‚Å“ü—Í‚µ‚Ä‚­‚¾‚³‚¢")
     If strDBName <> "" Then
         Call CreateMDBFile(strDBName)
     End If
+    Exit Sub
+ErrHandle:
+    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
@@ -30,6 +35,26 @@ Public Sub ShowTables()
     If vDBName = False Then
         Exit Sub
     End If
+    
+    Dim objCatalog As Object
+    Dim objTable As Object
+    Set objCatalog = CreateObject("ADOX.Catalog")
+        
+    On Error Resume Next
+    objCatalog.ActiveConnection = GetConnection(vDBName)
+    Dim strErr As String
+    strErr = Err.Description
+    On Error GoTo ErrHandle
+    
+    If strErr <> "" Then
+        If InStr(1, strErr, "ƒpƒXƒ[ƒh") > 0 Then
+            objCatalog.ActiveConnection = GetConnection(vDBName, InputBox("ƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢"))
+        Else
+            'ƒGƒ‰[‚ÌÄì¬
+            objCatalog.ActiveConnection = GetConnection(vDBName)
+        End If
+    End If
+    
     Dim objTopLeftCell As Range
     Set objTopLeftCell = SelectCell("Œ‹‰Ê‚ğ•\¦‚·‚éƒZƒ‹‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", Selection)
     If objTopLeftCell Is Nothing Then
@@ -41,10 +66,6 @@ Public Sub ShowTables()
     objTopLeftCell.Cells(1, 2) = "ƒ^ƒCƒv"
     
     '–¾×‚Ìİ’è
-    Dim objCatalog As Object
-    Dim objTable As Object
-    Set objCatalog = CreateObject("ADOX.Catalog")
-    objCatalog.ActiveConnection = GetConnection(vDBName, "")
     Dim i As Long
     i = 1
     For Each objTable In objCatalog.Tables
@@ -54,6 +75,10 @@ Public Sub ShowTables()
             objTopLeftCell.Cells(i, 2) = objTable.Type
         End If
     Next
+    Exit Sub
+ErrHandle:
+    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
@@ -61,7 +86,7 @@ End Sub
 '[ˆø”] MDBƒtƒ@ƒCƒ‹–¼AƒpƒXƒ[ƒh
 '[–ß’l] ƒf[ƒ^ƒx[ƒXÚ‘±•¶š—ñ
 '*****************************************************************************
-Private Function GetConnection(ByVal strFileName As String, ByVal strPassword As String) As String
+Private Function GetConnection(ByVal strFileName As String, Optional ByVal strPassword As String = "") As String
     GetConnection = C_CONNECTSTR
     GetConnection = Replace(GetConnection, "{Provider}", C_PROVIDER)
     GetConnection = Replace(GetConnection, "{FileName}", strFileName)
@@ -85,6 +110,7 @@ End Sub
 '[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub MakeImportSQL()
+On Error GoTo ErrHandle
     Dim vDBName As Variant
     vDBName = Application.GetOpenFilename("Accessƒtƒ@ƒCƒ‹,*.*")
     If vDBName = False Then
@@ -108,7 +134,7 @@ Public Sub MakeImportSQL()
     End If
     
     Dim strDB As String
-    strDB = "[MS ACCESS;DATABASE={FileName}].[ƒe[ƒuƒ‹–¼]"
+    strDB = "[MS ACCESS;DATABASE={FileName}].[...]"
     strDB = Replace(strDB, "{FileName}", vDBName)
     
     Dim strFROM As String
@@ -126,9 +152,14 @@ Public Sub MakeImportSQL()
         strSQL = strSQL & "  INTO " & strDB & vbCrLf
         strSQL = strSQL & "  FROM " & strFROM
     End If
+
     Call MsgBox(GetMessage(strSQL))
     strSQL = C_WARNING & vbCrLf & strSQL
     Call SetClipbordText(strSQL)
+    Exit Sub
+ErrHandle:
+    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
@@ -137,6 +168,7 @@ End Sub
 '[–ß’l] ‚È‚µ
 '*****************************************************************************
 Public Sub MakeDeleteTableSQL()
+On Error GoTo ErrHandle
     Dim vDBName As Variant
     vDBName = Application.GetOpenFilename("Accessƒtƒ@ƒCƒ‹,*.*")
     If vDBName = False Then
@@ -154,7 +186,7 @@ Public Sub MakeDeleteTableSQL()
     End If
     
     Dim strDB As String
-    strDB = "[MS ACCESS;DATABASE={FileName}].[ƒe[ƒuƒ‹–¼]"
+    strDB = "[MS ACCESS;DATABASE={FileName}].[...]"
     strDB = Replace(strDB, "{FileName}", vDBName)
     
     Dim strSQL As String
@@ -166,6 +198,10 @@ Public Sub MakeDeleteTableSQL()
     Call MsgBox(GetMessage(strSQL))
     strSQL = C_WARNING & vbCrLf & strSQL
     Call SetClipbordText(strSQL)
+    Exit Sub
+ErrHandle:
+    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
@@ -175,7 +211,7 @@ End Sub
 '*****************************************************************************
 Private Function GetMessage(ByVal strSQL As String) As String
     GetMessage = "ˆÈ‰º‚ÌSQL‚ğƒNƒŠƒbƒvƒ{[ƒh‚ÉƒRƒs[‚µ‚Ü‚µ‚½B" & vbCrLf
-    GetMessage = GetMessage & "•K—v‚É‰‚¶‚Äƒe[ƒuƒ‹–¼‚ğ•ÏX‚µ‚Ä“K—p‚ÈƒZƒ‹‚É“\‚è‚Â‚¯‚ÄuSQLÀsvƒRƒ}ƒ“ƒh‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢B" & vbCrLf
+    GetMessage = GetMessage & " [...]•”•ª‚ğƒe[ƒuƒ‹–¼‚É•ÏX‚µ‚ÄSQL‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢B" & vbCrLf
     GetMessage = GetMessage & strSQL
 End Function
 
