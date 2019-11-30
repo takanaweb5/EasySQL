@@ -12,6 +12,8 @@ EXCELでかんたんにエクセルファイルやアクセスファイルに対
 外部ファイルに対してSQLを実行可      
 ![外部ファイル参照サンプル](https://user-images.githubusercontent.com/50874513/69870085-1ad87380-12f2-11ea-8e06-4304703bfc0d.png)  
 
+# 詳しい説明
+[EXCELでEXCELファイルおよびACCESSのデータに対してかんたんにSQLを実行するツール](https://qiita.com/takahasinaoki/items/7b3918f781a74ae6394f)
 
 ### ライセンス
 MITライセンスに準拠します
