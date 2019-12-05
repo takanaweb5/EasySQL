@@ -1,5 +1,6 @@
 Attribute VB_Name = "AccessEtc"
 Option Explicit
+Option Private Module
 
 Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};"
 'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"  'Access2003以前の形式のmdbファイルを作成する時はこちらにする
