@@ -81,7 +81,9 @@ Private Sub Workbook_BeforeClose(Cancel As Boolean)
     For i = 1 To AddIns.Count
         If UCase(AddIns(i).Name) = UCase(ThisWorkbook.Name) Then
             If AddIns(i).Installed = False Then
+                On Error Resume Next
                 Call Application.CommandBars("EasySQL").Delete
+                Exit Sub
             End If
         End If
     Next i
