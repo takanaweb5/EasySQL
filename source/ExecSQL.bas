@@ -117,7 +117,7 @@ End Sub
 Private Function IsSelect(ByVal strSQL As String) As Boolean
     strSQL = DeleteEtc(strSQL)
     strSQL = UCase(strSQL)
-    strSQL = Replace(strSQL, vbLf, Chr(0))  '‰üs‚ğChr(0)‚É•ÏŠ·
+    strSQL = Replace(strSQL, vbLf, " ")  '‰üs‚ğ‹ó”’‚É•ÏŠ·
     strSQL = Trim(strSQL)
     If Left(strSQL, 6) <> "SELECT" And Left(strSQL, 9) <> "TRANSFORM" Then
         IsSelect = False
