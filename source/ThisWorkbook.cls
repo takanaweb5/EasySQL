@@ -73,6 +73,21 @@ Private Sub Workbook_Open()
 End Sub
 
 '*****************************************************************************
+'[イベント] Workbook_BeforeClose
+'[概要] ファイルを閉じる時に実行される
+'*****************************************************************************
+Private Sub Workbook_BeforeClose(Cancel As Boolean)
+    Dim i As Long
+    For i = 1 To AddIns.Count
+        If UCase(AddIns(i).Name) = UCase(ThisWorkbook.Name) Then
+            If AddIns(i).Installed = False Then
+                Call Application.CommandBars("EasySQL").Delete
+            End If
+        End If
+    Next i
+End Sub
+
+'*****************************************************************************
 '[概要] ツールバーのインストール
 '[引数] なし
 '[戻値] なし
