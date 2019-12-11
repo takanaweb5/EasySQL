@@ -272,13 +272,12 @@ On Error GoTo ErrHandle
     Dim objMatch   As Object
     Dim strSubSQL  As String
     Dim strReplace As String
-    Dim Dummy As New DBAccess
     
     Set objRegExp = CreateObject("VBScript.RegExp")
     objRegExp.Global = True
     objRegExp.Pattern = "\{(.+?)\}"
     
-    ReplaceCellReference = Dummy.DeleteComment(GetRangeText(objSQLCell))
+    ReplaceCellReference = DBAccess.DeleteComment(GetRangeText(objSQLCell))
     If objRegExp.Test(ReplaceCellReference) Then
         For Each objMatch In objRegExp.Execute(ReplaceCellReference)
             strReplace = objMatch.SubMatches(0)
@@ -369,4 +368,3 @@ Private Function GetRangeText(ByRef objRange As Range) As String
         Next
     End If
 End Function
-
