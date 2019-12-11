@@ -5,7 +5,7 @@ END
 Attribute VB_Name = "DBAccess"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
-Attribute VB_PredeclaredId = True
+Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
@@ -35,19 +35,16 @@ End Function
 '*****************************************************************************
 '[概要] ＳＱＬの構文チェックを行う
 '       項目名の間違いはパラメータと判定されるのでパラメータの情報を表示する例外を生成する
-'[引数] SQL
+'[引数] なし
 '[戻値] なし
 '*****************************************************************************
-Public Sub CheckSQL(Optional ByVal strSQL As String = "")
-    If strSQL = "" Then
-        strSQL = FSQL
-    End If
+Public Sub CheckSQL()
     Dim Param  As Object
     Dim strErr As String
     With CreateObject("ADODB.Command")
         .ActiveConnection = GetConnection()
         .CommandType = adCmdText
-        .CommandText = strSQL
+        .CommandText = FSQL
         For Each Param In .Parameters
             strErr = strErr & Param.Name & " ? " & vbLf
         Next
@@ -59,18 +56,15 @@ End Sub
 
 '*****************************************************************************
 '[概要] 更新系またはDDLのSQLを実行する(※Accessファイルに対して実行可能)
-'[引数] SQL
+'[引数] なし
 '[戻値] 更新系SQLの時、更新レコード数
 '*****************************************************************************
-Public Function Execute(Optional ByVal strSQL As String = "") As Long
-    If strSQL = "" Then
-        strSQL = FSQL
-    End If
+Public Function Execute() As Long
     Dim vRecCount As Variant
     With CreateObject("ADODB.Command")
         .ActiveConnection = GetConnection()
         .CommandType = adCmdText
-        .CommandText = strSQL
+        .CommandText = FSQL
         Call .Execute(vRecCount)
     End With
     On Error Resume Next
@@ -99,6 +93,7 @@ On Error GoTo ErrHandle
         objRange.Cells(1, i) = objRecordset.Fields(i - 1).Name
     Next
     Application.ScreenUpdating = True
+    DoEvents
     
     '明細の設定
     Application.ScreenUpdating = False

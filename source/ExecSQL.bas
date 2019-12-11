@@ -182,7 +182,7 @@ On Error GoTo ErrHandle
     Dim dblTime As Double
     Dim lngRecCount As Long
     dblTime = Timer()
-    lngRecCount = clsDBAccess.Execute()
+    lngRecCount = clsDBAccess.Execute
     Call MsgBox("更新件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
                 "実行時間：" & Int(Timer() - dblTime) & " 秒")
     Exit Sub
@@ -211,6 +211,7 @@ On Error GoTo ErrHandle
     '結果のシートを表示して、結果のセルを選択
     Call objTopLeftCell.Worksheet.Activate
     Call objTopLeftCell.Select
+    DoEvents
     
     'SQLの構文チェックを実施する
     Dim clsDBAccess  As New DBAccess
@@ -271,12 +272,13 @@ On Error GoTo ErrHandle
     Dim objMatch   As Object
     Dim strSubSQL  As String
     Dim strReplace As String
+    Dim Dummy As New DBAccess
     
     Set objRegExp = CreateObject("VBScript.RegExp")
     objRegExp.Global = True
     objRegExp.Pattern = "\{(.+?)\}"
     
-    ReplaceCellReference = DBAccess.DeleteComment(GetRangeText(objSQLCell))
+    ReplaceCellReference = Dummy.DeleteComment(GetRangeText(objSQLCell))
     If objRegExp.Test(ReplaceCellReference) Then
         For Each objMatch In objRegExp.Execute(ReplaceCellReference)
             strReplace = objMatch.SubMatches(0)
