@@ -99,6 +99,7 @@ On Error GoTo ErrHandle
         objRange.Cells(1, i) = objRecordset.Fields(i - 1).Name
     Next
     Application.ScreenUpdating = True
+    DoEvents
     
     'ñæç◊ÇÃê›íË
     Application.ScreenUpdating = False

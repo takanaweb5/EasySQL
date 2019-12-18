@@ -211,6 +211,7 @@ On Error GoTo ErrHandle
     '結果のシートを表示して、結果のセルを選択
     Call objTopLeftCell.Worksheet.Activate
     Call objTopLeftCell.Select
+    DoEvents
     
     'SQLの構文チェックを実施する
     Dim clsDBAccess  As New DBAccess
