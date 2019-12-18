@@ -182,7 +182,7 @@ On Error GoTo ErrHandle
     Dim dblTime As Double
     Dim lngRecCount As Long
     dblTime = Timer()
-    lngRecCount = clsDBAccess.Execute
+    lngRecCount = clsDBAccess.Execute()
     Call MsgBox("更新件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
                 "実行時間：" & Int(Timer() - dblTime) & " 秒")
     Exit Sub
@@ -211,7 +211,6 @@ On Error GoTo ErrHandle
     '結果のシートを表示して、結果のセルを選択
     Call objTopLeftCell.Worksheet.Activate
     Call objTopLeftCell.Select
-    DoEvents
     
     'SQLの構文チェックを実施する
     Dim clsDBAccess  As New DBAccess
@@ -368,3 +367,4 @@ Private Function GetRangeText(ByRef objRange As Range) As String
         Next
     End If
 End Function
+

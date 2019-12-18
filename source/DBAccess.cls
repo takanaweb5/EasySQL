@@ -42,7 +42,6 @@ Public Sub CheckSQL(Optional ByVal strSQL As String = "")
     If strSQL = "" Then
         strSQL = FSQL
     End If
-    
     Dim Param  As Object
     Dim strErr As String
     With CreateObject("ADODB.Command")
@@ -67,7 +66,6 @@ Public Function Execute(Optional ByVal strSQL As String = "") As Long
     If strSQL = "" Then
         strSQL = FSQL
     End If
-    
     Dim vRecCount As Variant
     With CreateObject("ADODB.Command")
         .ActiveConnection = GetConnection()
@@ -101,7 +99,6 @@ On Error GoTo ErrHandle
         objRange.Cells(1, i) = objRecordset.Fields(i - 1).Name
     Next
     Application.ScreenUpdating = True
-    DoEvents
     
     'ñæç◊ÇÃê›íË
     Application.ScreenUpdating = False
