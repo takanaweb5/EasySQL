@@ -43,6 +43,8 @@ Private Sub Workbook_Open()
     End If
     
     Call InstToolBar
+    Application.CommandBars("EasySQL").Visible = True
+    
     Dim i As Long
     For i = 1 To AddIns.Count
         If UCase(AddIns(i).Name) = UCase(ThisWorkbook.Name) Then
@@ -150,17 +152,29 @@ Private Sub InstHelpMsg()
     strInMsg(1) = "：　'　や　[]"
     strInMsg(2) = "：　,　など"
     strInMsg(3) = "：値を連結したいセル範囲を指定します(複数指定可)"
+#If VBA7 Then
     Call Application.MacroOptions("VALUEJOIN", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1), strInMsg(2), strInMsg(3)))
+#Else 'EXCEL2007以前には、引数のHELPは設定できない
+    Call Application.MacroOptions("VALUEJOIN", strMsg, , , , , "EasySQL")
+#End If
     
     strMsg = "SQLの実行結果を2次元配列で返します" & vbLf
     strMsg = strMsg & "範囲を指定して配列数式形式(Ctrl+Shift+Enter)で取り出してください"
     strInMsg(1) = "：SQLの入力されたセル"
     strInMsg(2) = "：再計算のトリガーにしたいセルがあれば指定します(いくつでも可)"
+#If VBA7 Then
     Call Application.MacroOptions("GetSQLRecordset", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1), strInMsg(2)))
+#Else 'EXCEL2007以前には、引数のHELPは設定できない
+    Call Application.MacroOptions("GetSQLRecordset", strMsg, , , , , "EasySQL")
+#End If
     
     strMsg = "セル参照の反映とコメント削除を実行した後の、データベースに渡すSQLを表示します"
     strInMsg(1) = "：SQLの入力されたセル"
+#If VBA7 Then
     Call Application.MacroOptions("ReplaceCellRef", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1)))
+#Else 'EXCEL2007以前には、引数のHELPは設定できない
+    Call Application.MacroOptions("ReplaceCellRef", strMsg, , , , , "EasySQL")
+#End If
 End Sub
 
 '*****************************************************************************
@@ -170,9 +184,9 @@ End Sub
 '*****************************************************************************
 Private Sub UninstHelpMsg()
     On Error Resume Next
-    Call Application.MacroOptions("VALUEJOIN", "", , , , , 14, , , , Array(""))
-    Call Application.MacroOptions("GetSQLRecordset", "", , , , , 14, , , , Array(""))
-    Call Application.MacroOptions("ReplaceCellRef", "", , , , , 14, , , , Array(""))
+    Call Application.MacroOptions("VALUEJOIN", "", , , , , 14)
+    Call Application.MacroOptions("GetSQLRecordset", "", , , , , 14)
+    Call Application.MacroOptions("ReplaceCellRef", "", , , , , 14)
     '14：ユーザ定義(デフォルト値)
 End Sub
 
