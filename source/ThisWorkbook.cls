@@ -25,7 +25,7 @@ Private Sub Workbook_AddinUninstall()
     'ツールバーを削除し、セル関数のHELPも削除
     On Error Resume Next
     Call Application.CommandBars("EasySQL").Delete
-    Call UninstHelpMsg
+'    Call UninstHelpMsg
 End Sub
 
 '*****************************************************************************
@@ -75,7 +75,7 @@ Private Sub Workbook_BeforeClose(Cancel As Boolean)
     'ツールバーを削除し、セル関数のHELPも削除
     On Error Resume Next
     Call Application.CommandBars("EasySQL").Delete
-    Call UninstHelpMsg
+'    Call UninstHelpMsg
 End Sub
 
 '*****************************************************************************
@@ -155,7 +155,7 @@ Private Sub InstHelpMsg()
 #If VBA7 Then
     Call Application.MacroOptions("VALUEJOIN", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1), strInMsg(2), strInMsg(3)))
 #Else 'EXCEL2007以前には、引数のHELPは設定できない
-    Call Application.MacroOptions("VALUEJOIN", strMsg, , , , , "EasySQL")
+    Call Application.MacroOptions("VALUEJOIN", strMsg)
 #End If
     
     strMsg = "SQLの実行結果を2次元配列で返します" & vbLf
@@ -165,7 +165,7 @@ Private Sub InstHelpMsg()
 #If VBA7 Then
     Call Application.MacroOptions("GetSQLRecordset", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1), strInMsg(2)))
 #Else 'EXCEL2007以前には、引数のHELPは設定できない
-    Call Application.MacroOptions("GetSQLRecordset", strMsg, , , , , "EasySQL")
+    Call Application.MacroOptions("GetSQLRecordset", strMsg)
 #End If
     
     strMsg = "セル参照の反映とコメント削除を実行した後の、データベースに渡すSQLを表示します"
@@ -173,7 +173,7 @@ Private Sub InstHelpMsg()
 #If VBA7 Then
     Call Application.MacroOptions("ReplaceCellRef", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1)))
 #Else 'EXCEL2007以前には、引数のHELPは設定できない
-    Call Application.MacroOptions("ReplaceCellRef", strMsg, , , , , "EasySQL")
+    Call Application.MacroOptions("ReplaceCellRef", strMsg)
 #End If
 End Sub
 
@@ -182,12 +182,12 @@ End Sub
 '[引数] なし
 '[戻値] なし
 '*****************************************************************************
-Private Sub UninstHelpMsg()
-    On Error Resume Next
-    Call Application.MacroOptions("VALUEJOIN", "", , , , , 14)
-    Call Application.MacroOptions("GetSQLRecordset", "", , , , , 14)
-    Call Application.MacroOptions("ReplaceCellRef", "", , , , , 14)
-    '14：ユーザ定義(デフォルト値)
-End Sub
+'Public Sub UninstHelpMsg()
+'    On Error Resume Next
+'    Call Application.MacroOptions("VALUEJOIN", "", , , , , 14)
+'    Call Application.MacroOptions("GetSQLRecordset", "", , , , , 14)
+'    Call Application.MacroOptions("ReplaceCellRef", "", , , , , 14)
+'    '14：ユーザ定義(デフォルト値)
+'End Sub
 
 
