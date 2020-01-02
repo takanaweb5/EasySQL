@@ -78,7 +78,7 @@ End Sub
 '[戻値] なし
 '*****************************************************************************
 Public Sub ExecuteSQL()
-    If Dir(ActiveWorkbook.FullName) = "" Then
+    If ActiveWorkbook.Path = "" Then
         Call MsgBox("一度も保存されていないファイルでは実行できません")
         Exit Sub
     End If

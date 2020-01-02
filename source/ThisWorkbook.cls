@@ -144,8 +144,8 @@ End Sub
 Private Sub InstHelpMsg()
     Dim strMsg As String
     Dim strInMsg(1 To 3) As String
-    On Error Resume Next
     
+    On Error Resume Next
     strMsg = "以下の例のようにセルの値を区切り文字で連結します" & vbLf
     strMsg = strMsg & "　　'AAA','BBB','CCC'　　や　　[AAA],[BBB],[CCC]" & vbLf
     strMsg = strMsg & "SQLのIN演算子の条件の羅列などに利用すると便利です"
@@ -175,6 +175,10 @@ Private Sub InstHelpMsg()
 #Else 'EXCEL2007以前には、引数のHELPは設定できない
     Call Application.MacroOptions("ReplaceCellRef", strMsg)
 #End If
+
+    'この1行がないと、MacroOptionsコマンドはbasファイルのAttributeを書き換えるため
+    'このファイルを閉じる時に「変更を保存しますか？」と変更がなくても表示されてしまう。
+    ThisWorkbook.Saved = True
 End Sub
 
 '*****************************************************************************
