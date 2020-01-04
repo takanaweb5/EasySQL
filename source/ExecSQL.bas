@@ -78,7 +78,7 @@ End Sub
 '[戻値] なし
 '*****************************************************************************
 Public Sub ExecuteSQL()
-    If Dir(ActiveWorkbook.FullName) = "" Then
+    If ActiveWorkbook.Path = "" Then
         Call MsgBox("一度も保存されていないファイルでは実行できません")
         Exit Sub
     End If
@@ -182,7 +182,7 @@ On Error GoTo ErrHandle
     Dim dblTime As Double
     Dim lngRecCount As Long
     dblTime = Timer()
-    lngRecCount = clsDBAccess.Execute
+    lngRecCount = clsDBAccess.Execute()
     Call MsgBox("更新件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
                 "実行時間：" & Int(Timer() - dblTime) & " 秒")
     Exit Sub
@@ -368,3 +368,4 @@ Private Function GetRangeText(ByRef objRange As Range) As String
         Next
     End If
 End Function
+
