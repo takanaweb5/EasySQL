@@ -33,6 +33,9 @@ End Sub
 '[概要] ファイルを開く時に実行される
 '*****************************************************************************
 Private Sub Workbook_Open()
+    'ユーザ定義セル関数のHELPを設定
+    Call InstHelpMsg
+    
     On Error Resume Next
     Application.CommandBars("EasySQL").Visible = True
     If Err.Number = 0 Then
@@ -54,7 +57,6 @@ Private Sub Workbook_Open()
             End If
         End If
     Next i
-    Call InstHelpMsg
 End Sub
 
 '*****************************************************************************
