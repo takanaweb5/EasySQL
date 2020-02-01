@@ -368,4 +368,3 @@ Private Function GetRangeText(ByRef objRange As Range) As String
         Next
     End If
 End Function
-
