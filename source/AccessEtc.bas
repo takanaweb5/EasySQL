@@ -3,6 +3,7 @@ Option Explicit
 Option Private Module
 
 Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};"
+Private Const C_OLDTYPE = "Jet OLEDB:Engine Type=5;"
 'Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};Jet OLEDB:Engine Type=5" 'Access2003以前の形式
 'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"  'Access2003以前の形式のmdbファイルを作成する時はこちらにする
 Private Const C_PROVIDER = "Microsoft.ACE.OLEDB.12.0"
@@ -15,11 +16,13 @@ Private Const C_WARNING = "/* [...]部分をテーブル名に変更してからSQLを実行してく
 '*****************************************************************************
 Public Sub CreateDB()
 On Error GoTo ErrHandle
-    Dim strDBName As String
-    strDBName = InputBox("作成するAccessファイル名をフルパスで入力してください")
-    If strDBName <> "" Then
-        Call CreateMDBFile(strDBName, InputBox("パスワード設定する場合のみパスワードを入力してください"))
+    Dim vDBName As Variant
+    vDBName = Application.GetSaveAsFilename("", "2002-2003,*.mdb,2007-,*.accdb,全てのファイル,*.*", , "新しいデータベース")
+    If vDBName = False Then
+        Exit Sub
     End If
+    
+    Call CreateMDBFile(vDBName, InputBox("パスワードを設定する場合のみパスワードを入力してください"))
     Exit Sub
 ErrHandle:
     'エラーメッセージを表示
@@ -97,11 +100,15 @@ End Function
 
 '*****************************************************************************
 '[概要] データベースの接続文字列を取得する
-'[引数] MDBファイル名、パスワード
+'[引数] MDBファイル名、パスワード、2002-2003形式のmdbファイルかどうか
 '[戻値] データベース接続文字列
 '*****************************************************************************
-Private Function GetConStr(ByVal strFileName As String, Optional ByVal strPassword As String = "") As String
-    GetConStr = C_CONNECTSTR
+Private Function GetConStr(ByVal strFileName As String, Optional ByVal strPassword As String = "", Optional ByVal blnOldType As Boolean = False) As String
+    If blnOldType Then
+        GetConStr = C_CONNECTSTR & C_OLDTYPE
+    Else
+        GetConStr = C_CONNECTSTR
+    End If
     GetConStr = Replace(GetConStr, "{Provider}", C_PROVIDER)
     GetConStr = Replace(GetConStr, "{FileName}", strFileName)
     GetConStr = Replace(GetConStr, "{Password}", strPassword)
@@ -114,7 +121,7 @@ End Function
 '*****************************************************************************
 Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPassword As String = "")
     With CreateObject("ADOX.Catalog")
-        Call .Create(GetConStr(strFileName, strPassword))
+        Call .Create(GetConStr(strFileName, strPassword, UCase(Right(strFileName, 4)) = ".MDB"))
     End With
 End Sub
 
