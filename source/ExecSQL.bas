@@ -79,8 +79,8 @@ End Sub
 '*****************************************************************************
 Public Sub ExecuteSQL()
     If ActiveWorkbook.Path = "" Then
-        Call MsgBox("一度も保存されていないファイルでは実行できません")
-        Exit Sub
+'        Call MsgBox("一度も保存されていないファイルでは実行できません")
+'        Exit Sub
     End If
     
     If Selection Is Nothing Then
@@ -119,6 +119,11 @@ Private Function IsSelect(ByVal strSQL As String) As Boolean
     strSQL = UCase(strSQL)
     strSQL = Replace(strSQL, vbLf, " ")  '改行を空白に変換
     strSQL = Trim(strSQL)
+    If Left(strSQL, 4) = "WITH" Then
+        IsSelect = True
+        Exit Function
+    End If
+    
     If Left(strSQL, 6) <> "SELECT" And Left(strSQL, 9) <> "TRANSFORM" Then
         IsSelect = False
         Exit Function
