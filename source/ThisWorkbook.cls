@@ -10,156 +10,6 @@ Attribute VB_Exposed = True
 Option Explicit
 
 '*****************************************************************************
-'[イベント] AddinInstall
-'[概要] アドインのインストール時に実行される
-'*****************************************************************************
-Private Sub Workbook_AddinInstall()
-    Call Workbook_Open
-End Sub
-
-'*****************************************************************************
-'[イベント] AddinUninstall
-'[概要] アドインのアンインストール時に実行される
-'*****************************************************************************
-Private Sub Workbook_AddinUninstall()
-    'ツールバーを削除し、セル関数のHELPも削除
-    On Error Resume Next
-    Call Application.CommandBars("EasySQL").Delete
-'    Call UninstHelpMsg
-End Sub
-
-'*****************************************************************************
-'[イベント] WorkbookOpen
-'[概要] ファイルを開く時に実行される
-'*****************************************************************************
-Private Sub Workbook_Open()
-    'ユーザ定義セル関数のHELPを設定
-    Call InstHelpMsg
-    
-    On Error Resume Next
-    Application.CommandBars("EasySQL").Visible = True
-    If Err.Number = 0 Then
-        'アドインでToolbarの存在が確認された時は何もしない
-        'EXCEL2013以降だとアドインがインストールされていてもTOOLBARが
-        '認識されない不具合があるのでその時はErr.Number <> 0となる
-        Exit Sub
-    End If
-    
-    Call InstToolBar
-    Application.CommandBars("EasySQL").Visible = True
-    
-    Dim i As Long
-    For i = 1 To AddIns.Count
-        If UCase(AddIns(i).Name) = UCase(ThisWorkbook.Name) Then
-            If AddIns(i).Installed = True Then
-                'アドインがインストールされていればHELPの再設定は不要
-                Exit Sub
-            End If
-        End If
-    Next i
-End Sub
-
-'*****************************************************************************
-'[イベント] Workbook_BeforeClose
-'[概要] ファイルを閉じる時に実行される
-'*****************************************************************************
-Private Sub Workbook_BeforeClose(Cancel As Boolean)
-    Dim i As Long
-    'アドインなら、何にもしない
-    For i = 1 To AddIns.Count
-        If UCase(AddIns(i).Name) = UCase(ThisWorkbook.Name) Then
-            If AddIns(i).Installed = True Then
-                Exit Sub
-            End If
-        End If
-    Next i
-    
-    'ツールバーを削除し、セル関数のHELPも削除
-    On Error Resume Next
-    Call Application.CommandBars("EasySQL").Delete
-'    Call UninstHelpMsg
-End Sub
-
-'*****************************************************************************
-'[概要] ツールバーのインストール
-'[引数] なし
-'[戻値] なし
-'*****************************************************************************
-Private Sub InstToolBar()
-    On Error Resume Next
-    Call Application.CommandBars("EasySQL").Delete
-    
-    Dim objCmdBar   As CommandBar
-    Set objCmdBar = Application.CommandBars.Add("EasySQL")
-    
-    With objCmdBar.Controls.Add(msoControlButton)
-        .Caption = "SQL実行"
-        .OnAction = "ExecuteSQL"
-        .TooltipText = "SQLを実行する"
-        .Style = msoButtonCaption
-    End With
-
-    With objCmdBar.Controls.Add(msoControlButton)
-        .Caption = "SQL作成"
-        .OnAction = "MakeSQL"
-        .TooltipText = "SQLのひな形を作成する"
-        .Style = msoButtonCaption
-    End With
-    
-    With objCmdBar.Controls.Add(msoControlPopup)
-        .Caption = "Access"
-        With .Controls.Add(msoControlButton)
-            .Caption = "データベース作成"
-            .OnAction = "CreateDB"
-            .TooltipText = "Accessのデータベースファイルを作成する"
-            .Style = msoButtonCaption
-        End With
-
-        With .Controls.Add(msoControlButton)
-            .Caption = "テーブル一覧表示"
-            .OnAction = "ShowTables"
-            .TooltipText = "Accessデータベースのテーブルの一覧を表示する"
-            .Style = msoButtonCaption
-        End With
-        
-        With .Controls.Add(msoControlButton)
-            .Caption = "SELECT文のひな型作成"
-            .OnAction = "MakeSelectSQL"
-            .TooltipText = "SELECT文のひな型を作成する"
-            .Style = msoButtonCaption
-        End With
-
-        With .Controls.Add(msoControlButton)
-            .Caption = "インポート用SQL作成"
-            .OnAction = "MakeImportSQL"
-            .TooltipText = "テーブルインポート用のSQLを作成する"
-            .Style = msoButtonCaption
-        End With
-
-        With .Controls.Add(msoControlButton)
-            .Caption = "削除用SQL作成"
-            .OnAction = "MakeDeleteTableSQL"
-            .TooltipText = "テーブル削除用のSQLを作成する"
-            .Style = msoButtonCaption
-        End With
-    
-        With .Controls.Add(msoControlButton)
-            .Caption = "クエリ作成用SQL作成"
-            .OnAction = "MakeQuerySQL"
-            .TooltipText = "クエリ作成用のSQLを作成する"
-            .Style = msoButtonCaption
-        End With
-
-        With .Controls.Add(msoControlButton)
-            .Caption = "クエリ削除用SQL作成"
-            .OnAction = "MakeDeleteQuerySQL"
-            .TooltipText = "クエリ削除用のSQLを作成する"
-            .Style = msoButtonCaption
-        End With
-    End With
-End Sub
-
-'*****************************************************************************
 '[概要] ユーザ定義セル関数のHELPを設定
 '[引数] なし
 '[戻値] なし
@@ -175,30 +25,17 @@ Private Sub InstHelpMsg()
     strInMsg(1) = "：　'　や　[]"
     strInMsg(2) = "：　,　など"
     strInMsg(3) = "：値を連結したいセル範囲を指定します(複数指定可)"
-#If VBA7 Then
     Call Application.MacroOptions("VALUEJOIN", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1), strInMsg(2), strInMsg(3)))
-#Else 'EXCEL2007以前には、引数のHELPは設定できない
-    Call Application.MacroOptions("VALUEJOIN", strMsg)
-#End If
     
     strMsg = "SQLの実行結果を2次元配列で返します" & vbLf
     strMsg = strMsg & "範囲を指定して配列数式形式(Ctrl+Shift+Enter)で取り出してください"
     strInMsg(1) = "：SQLの入力されたセル"
     strInMsg(2) = "：再計算のトリガーにしたいセルがあれば指定します(いくつでも可)"
-#If VBA7 Then
     Call Application.MacroOptions("GetSQLRecordset", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1), strInMsg(2)))
-#Else 'EXCEL2007以前には、引数のHELPは設定できない
-    Call Application.MacroOptions("GetSQLRecordset", strMsg)
-#End If
     
     strMsg = "セル参照の反映とコメント削除を実行した後の、データベースに渡すSQLを表示します"
     strInMsg(1) = "：SQLの入力されたセル"
-#If VBA7 Then
     Call Application.MacroOptions("ReplaceCellRef", strMsg, , , , , "EasySQL", , , , Array(strInMsg(1)))
-#Else 'EXCEL2007以前には、引数のHELPは設定できない
-    Call Application.MacroOptions("ReplaceCellRef", strMsg)
-#End If
-
     'この1行がないと、MacroOptionsコマンドはbasファイルのAttributeを書き換えるため
     'このファイルを閉じる時に「変更を保存しますか？」と変更がなくても表示されてしまう。
     ThisWorkbook.Saved = True
