@@ -123,6 +123,13 @@ Private Sub InstToolBar()
         End With
         
         With .Controls.Add(msoControlButton)
+            .Caption = "SELECT文のひな型作成"
+            .OnAction = "MakeSelectSQL"
+            .TooltipText = "SELECT文のひな型を作成する"
+            .Style = msoButtonCaption
+        End With
+
+        With .Controls.Add(msoControlButton)
             .Caption = "インポート用SQL作成"
             .OnAction = "MakeImportSQL"
             .TooltipText = "テーブルインポート用のSQLを作成する"
@@ -133,6 +140,20 @@ Private Sub InstToolBar()
             .Caption = "削除用SQL作成"
             .OnAction = "MakeDeleteTableSQL"
             .TooltipText = "テーブル削除用のSQLを作成する"
+            .Style = msoButtonCaption
+        End With
+    
+        With .Controls.Add(msoControlButton)
+            .Caption = "クエリ作成用SQL作成"
+            .OnAction = "MakeQuerySQL"
+            .TooltipText = "クエリ作成用のSQLを作成する"
+            .Style = msoButtonCaption
+        End With
+
+        With .Controls.Add(msoControlButton)
+            .Caption = "クエリ削除用SQL作成"
+            .OnAction = "MakeDeleteQuerySQL"
+            .TooltipText = "クエリ削除用のSQLを作成する"
             .Style = msoButtonCaption
         End With
     End With

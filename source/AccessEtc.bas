@@ -3,8 +3,7 @@ Option Explicit
 Option Private Module
 
 Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};"
-'Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};Jet OLEDB:Engine Type=5" 'Access2003以前の形式
-'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"  'Access2003以前の形式のmdbファイルを作成する時はこちらにする
+Private Const C_OLDTYPE = "Jet OLEDB:Engine Type=5;"
 Private Const C_PROVIDER = "Microsoft.ACE.OLEDB.12.0"
 Private Const C_WARNING = "/* [...]部分をテーブル名に変更してからSQLを実行してください */"
 
@@ -15,11 +14,13 @@ Private Const C_WARNING = "/* [...]部分をテーブル名に変更してからSQLを実行してく
 '*****************************************************************************
 Public Sub CreateDB()
 On Error GoTo ErrHandle
-    Dim strDBName As String
-    strDBName = InputBox("作成するAccessファイル名をフルパスで入力してください")
-    If strDBName <> "" Then
-        Call CreateMDBFile(strDBName)
+    Dim vDBName As Variant
+    vDBName = Application.GetSaveAsFilename("", "2002-2003,*.mdb,2007-,*.accdb,全てのファイル,*.*", , "新しいデータベース")
+    If vDBName = False Then
+        Exit Sub
     End If
+    
+    Call CreateMDBFile(vDBName, InputBox("パスワードを設定する場合のみパスワードを入力してください"))
     Exit Sub
 ErrHandle:
     'エラーメッセージを表示
@@ -32,8 +33,9 @@ End Sub
 '[戻値] なし
 '*****************************************************************************
 Public Sub ShowTables()
+On Error GoTo ErrHandle
     Dim vDBName As Variant
-    vDBName = Application.GetOpenFilename("Accessファイル,*.*")
+    vDBName = Application.GetOpenFilename("Access,*.mdb;*.accdb,すべて,*.*")
     If vDBName = False Then
         Exit Sub
     End If
@@ -41,22 +43,8 @@ Public Sub ShowTables()
     Dim objCatalog As Object
     Dim objTable As Object
     Set objCatalog = CreateObject("ADOX.Catalog")
-        
-    On Error Resume Next
     objCatalog.ActiveConnection = GetConnection(vDBName)
-    Dim strErr As String
-    strErr = Err.Description
-    On Error GoTo ErrHandle
-    
-    If strErr <> "" Then
-        If InStr(1, strErr, "パスワード") > 0 Then
-            objCatalog.ActiveConnection = GetConnection(vDBName, InputBox("パスワードを入力してください"))
-        Else
-            'エラーの再作成
-            objCatalog.ActiveConnection = GetConnection(vDBName)
-        End If
-    End If
-    
+        
     Dim objTopLeftCell As Range
     Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
     If objTopLeftCell Is Nothing Then
@@ -84,15 +72,44 @@ ErrHandle:
 End Sub
 
 '*****************************************************************************
-'[概要] データベースの接続文字列を取得する
+'[概要] データベース接続オブジェクトを取得する
 '[引数] MDBファイル名、パスワード
+'[戻値] データベース接続オブジェクト
+'*****************************************************************************
+Private Function GetConnection(ByVal strFileName As String) As Object
+    Set GetConnection = CreateObject("ADODB.Connection")
+    On Error Resume Next
+    Call GetConnection.Open(GetConStr(strFileName))
+    If Err.Number = 0 Then
+        Exit Function
+    End If
+    
+    Dim strErr As String
+    strErr = Err.Description
+    On Error GoTo 0
+    
+    If InStr(1, strErr, "パスワード") > 0 Then
+        Call GetConnection.Open(GetConStr(strFileName, InputBox("パスワードを入力してください")))
+    Else
+        'エラーの再作成
+        Call GetConnection.Open(GetConStr(strFileName))
+    End If
+End Function
+
+'*****************************************************************************
+'[概要] データベースの接続文字列を取得する
+'[引数] MDBファイル名、パスワード、2002-2003形式のmdbファイルかどうか
 '[戻値] データベース接続文字列
 '*****************************************************************************
-Private Function GetConnection(ByVal strFileName As String, Optional ByVal strPassword As String = "") As String
-    GetConnection = C_CONNECTSTR
-    GetConnection = Replace(GetConnection, "{Provider}", C_PROVIDER)
-    GetConnection = Replace(GetConnection, "{FileName}", strFileName)
-    GetConnection = Replace(GetConnection, "{Password}", strPassword)
+Private Function GetConStr(ByVal strFileName As String, Optional ByVal strPassword As String = "", Optional ByVal blnOldType As Boolean = False) As String
+    If blnOldType Then
+        GetConStr = C_CONNECTSTR & C_OLDTYPE
+    Else
+        GetConStr = C_CONNECTSTR
+    End If
+    GetConStr = Replace(GetConStr, "{Provider}", C_PROVIDER)
+    GetConStr = Replace(GetConStr, "{FileName}", strFileName)
+    GetConStr = Replace(GetConStr, "{Password}", strPassword)
 End Function
 
 '*****************************************************************************
@@ -102,7 +119,7 @@ End Function
 '*****************************************************************************
 Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPassword As String = "")
     With CreateObject("ADOX.Catalog")
-        Call .Create(GetConnection(strFileName, strPassword))
+        Call .Create(GetConStr(strFileName, strPassword, UCase(Right(strFileName, 4)) = ".MDB"))
     End With
 End Sub
 
@@ -113,9 +130,9 @@ End Sub
 '*****************************************************************************
 Public Sub MakeImportSQL()
 On Error GoTo ErrHandle
-    Dim vDBName As Variant
-    vDBName = Application.GetOpenFilename("Accessファイル,*.*")
-    If vDBName = False Then
+    Dim strDB As String
+    strDB = GetDatabaseStr()
+    If strDB = "" Then
         Exit Sub
     End If
     
@@ -135,10 +152,6 @@ On Error GoTo ErrHandle
         Exit Sub
     End If
     
-    Dim strDB As String
-    strDB = "[MS ACCESS;DATABASE={FileName}].[...]"
-    strDB = Replace(strDB, "{FileName}", vDBName)
-    
     Dim strFROM As String
     strFROM = "[{Sheet}${Range}]"
     strFROM = Replace(strFROM, "{Sheet}", objTable.Worksheet.Name)
@@ -155,7 +168,7 @@ On Error GoTo ErrHandle
         strSQL = strSQL & "  FROM " & strFROM
     End If
 
-    Call MsgBox(GetMessage(strSQL))
+    Call MsgBox(GetMessage())
     strSQL = C_WARNING & vbCrLf & strSQL
     Call SetClipbordText(strSQL)
     Exit Sub
@@ -171,9 +184,9 @@ End Sub
 '*****************************************************************************
 Public Sub MakeDeleteTableSQL()
 On Error GoTo ErrHandle
-    Dim vDBName As Variant
-    vDBName = Application.GetOpenFilename("Accessファイル,*.*")
-    If vDBName = False Then
+    Dim strDB As String
+    strDB = GetDatabaseStr()
+    If strDB = "" Then
         Exit Sub
     End If
     
@@ -187,17 +200,13 @@ On Error GoTo ErrHandle
         Exit Sub
     End If
     
-    Dim strDB As String
-    strDB = "[MS ACCESS;DATABASE={FileName}].[...]"
-    strDB = Replace(strDB, "{FileName}", vDBName)
-    
     Dim strSQL As String
     If lngSelect = vbYes Then
         strSQL = "DELETE FROM " & strDB
     Else
         strSQL = "DROP TABLE " & strDB
     End If
-    Call MsgBox(GetMessage(strSQL))
+    Call MsgBox(GetMessage())
     strSQL = C_WARNING & vbCrLf & strSQL
     Call SetClipbordText(strSQL)
     Exit Sub
@@ -207,13 +216,113 @@ ErrHandle:
 End Sub
 
 '*****************************************************************************
+'[概要] クエリ作成用のSQLを作成する
+'[引数] なし
+'[戻値] なし
+'*****************************************************************************
+Public Sub MakeQuerySQL()
+On Error GoTo ErrHandle
+    Dim strDB As String
+    strDB = GetDatabaseStr()
+    If strDB = "" Then
+        Exit Sub
+    End If
+    
+    Dim strSQL As String
+    strSQL = "CREATE VIEW " & strDB & " AS" & vbCrLf
+    strSQL = strSQL & "select_statement"
+    
+    Call MsgBox(Replace(GetMessage(), "テーブル名", "クエリ名"))
+    strSQL = "/* [...]部分を作成するクエリ名に変更し、select_statementの部分にSELECT文を入力してSQLを実行してください */" & vbCrLf & strSQL
+    Call SetClipbordText(strSQL)
+    Exit Sub
+ErrHandle:
+    'エラーメッセージを表示
+    Call MsgBox(Err.Description)
+End Sub
+
+'*****************************************************************************
+'[概要] クエリ削除用のSQLを作成する
+'[引数] なし
+'[戻値] なし
+'*****************************************************************************
+Public Sub MakeDeleteQuerySQL()
+On Error GoTo ErrHandle
+    Dim strDB As String
+    strDB = GetDatabaseStr()
+    If strDB = "" Then
+        Exit Sub
+    End If
+    
+    Dim strSQL As String
+    strSQL = "DROP VIEW " & strDB
+    
+    Call MsgBox(Replace(GetMessage(), "テーブル名", "クエリ名"))
+    strSQL = Replace(C_WARNING, "テーブル名", "クエリ名") & vbCrLf & strSQL
+    Call SetClipbordText(strSQL)
+    Exit Sub
+ErrHandle:
+    'エラーメッセージを表示
+    Call MsgBox(Err.Description)
+End Sub
+
+'*****************************************************************************
 '[概要] ダイアログに出力するメッセージを編集する
-'[引数] SQL
+'[引数] なし
 '[戻値] ダイアログに出力するメッセージ
 '*****************************************************************************
-Private Function GetMessage(ByVal strSQL As String) As String
-    GetMessage = "以下のSQLをクリップボードにコピーしました。" & vbCrLf
-    GetMessage = GetMessage & " [...]部分をテーブル名に変更してSQLを実行してください。" & vbCrLf
-    GetMessage = GetMessage & strSQL
+Private Function GetMessage() As String
+    GetMessage = "SQLをクリップボードにコピーしました。" & vbCrLf
+    GetMessage = GetMessage & " [...]部分をテーブル名に変更してSQLを実行してください。"
+End Function
+
+'*****************************************************************************
+'[概要] データベース接続識別子を取得する
+'[引数] なし
+'[戻値] 例：[MS ACCESS;DATABASE=C:\TMP\sample.accdb;PWD=1234].[...]
+'*****************************************************************************
+Private Function GetDatabaseStr() As String
+    Dim vDBName As Variant
+    vDBName = Application.GetOpenFilename("Access,*.mdb;*.accdb,すべて,*.*")
+    If vDBName = False Then
+        Exit Function
+    End If
+    
+    Dim strPassword As String
+    strPassword = GetPassword(vDBName)
+    
+    Dim strDB As String
+    If strPassword = "" Then
+        strDB = "[MS ACCESS;DATABASE={FileName}].[...]"
+    Else
+        strDB = "[MS ACCESS;DATABASE={FileName};PWD={Password}].[...]"
+        strDB = Replace(strDB, "{Password}", strPassword)
+    End If
+    GetDatabaseStr = Replace(strDB, "{FileName}", vDBName)
+End Function
+
+'*****************************************************************************
+'[概要] データベースのパスワードを取得する(パスワードの妥当性は未チェック)
+'[引数] MDBファイル名
+'[戻値] パスワード(パスワード未設定のファイルの時は空の文字列)
+'*****************************************************************************
+Public Function GetPassword(ByVal strFileName As String) As String
+    Dim objConnection As Object
+    Set objConnection = CreateObject("ADODB.Connection")
+    On Error Resume Next
+    Call objConnection.Open(GetConStr(strFileName))
+    If Err.Number = 0 Then
+        'パスワード未設定の時
+        Call objConnection.Close
+        Exit Function
+    End If
+    
+    Dim strErr As String
+    strErr = Err.Description
+    On Error GoTo 0
+    
+    If InStr(1, strErr, "パスワード") > 0 Then
+        GetPassword = InputBox("パスワードを入力してください")
+    End If
 End Function
 

@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Extended Properties=""{Properties}"";"
+Private Const C_CONNECTSTR1 = "Provider={Provider};Data Source=""{FileName}"";Extended Properties=""{Properties}"";"
 Private Const C_PROVIDER = "Microsoft.ACE.OLEDB.12.0"
 'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"
 Private Const C_PROPERTIES = "Excel 12.0"
@@ -17,6 +17,16 @@ Private Const C_PROPERTIES = "Excel 12.0"
 Private Const adOpenStatic = 3   'adOpenForwardOnly ではレコード件数が返ってこない
 Private Const adLockReadOnly = 1
 Private Const adCmdText = 1
+Private Const adUseClient = 3
+
+Private Const MYDRIVER = "Driver={MySQL ODBC 5.3 Unicode Driver};"  'ドライバー
+Private Const MYSERVER = "Server=localhost;"                        'サーバー
+Private Const MYDATABASE = "Database={DATABASE};"                   'データベース名
+Private Const MYUSER = "UID={UID};"                                 'ユーザー名
+Private Const MYPASS = "PWD={PWD};"                                 'パスワード
+'Private Const MYCCODE = "STMT=SET NAMES sjis;"                     '文字コード（Excel側）
+'Private Const MYPORT = "Port=3306;"                                'ポート
+Private Const C_CONNECTSTR2 = MYDRIVER & MYSERVER & MYDATABASE & MYUSER & MYPASS
 
 Private FSQL As String
 
@@ -26,11 +36,17 @@ Private FSQL As String
 '[戻値] データベース接続文字列
 '*****************************************************************************
 Private Function GetConnection() As String
-    GetConnection = C_CONNECTSTR
+    GetConnection = C_CONNECTSTR1
     GetConnection = Replace(GetConnection, "{Provider}", C_PROVIDER)
     GetConnection = Replace(GetConnection, "{FileName}", ActiveWorkbook.FullName)
     GetConnection = Replace(GetConnection, "{Properties}", C_PROPERTIES)
 End Function
+'Private Function GetConnection() As String
+'    GetConnection = C_CONNECTSTR2
+'    GetConnection = Replace(GetConnection, "{DATABASE}", "mydb")
+'    GetConnection = Replace(GetConnection, "{UID}", "root")
+'    GetConnection = Replace(GetConnection, "{PWD}", "1111")
+'End Function
 
 '*****************************************************************************
 '[概要] ＳＱＬの構文チェックを行う
@@ -89,7 +105,13 @@ Public Function ExecuteToRange(ByRef objRange As Range, Optional ByVal strSQL As
     End If
     Dim objRecordset  As Object
     Set objRecordset = CreateObject("ADODB.Recordset")
+    objRecordset.CursorLocation = adUseClient
     Call objRecordset.Open(strSQL, GetConnection(), adOpenStatic, adLockReadOnly)
+    '更新系のSQLを間違って実行した時など
+    If objRecordset.State = 0 Then
+        'エラー作成
+        Call Err.Raise(513, , "レコードセットが開けません")
+    End If
 On Error GoTo ErrHandle
     
     '見出しの設定
@@ -126,6 +148,7 @@ Public Function ExecuteToArray(Optional ByVal strSQL As String = "") As Variant
     End If
     Dim objRecordset  As Object
     Set objRecordset = CreateObject("ADODB.Recordset")
+    objRecordset.CursorLocation = adUseClient
     Call objRecordset.Open(strSQL, GetConnection(), adOpenStatic, adLockReadOnly)
 On Error GoTo ErrHandle
     
