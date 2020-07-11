@@ -14,7 +14,7 @@ Option Explicit
 '*****************************************************************************
 Public Function VALUEJOIN(ByVal 両端文字 As String, ByVal 区切り文字 As String, ParamArray 連結セル())
 Attribute VALUEJOIN.VB_Description = "以下の例のようにセルの値を区切り文字で連結します\n　　'AAA','BBB','CCC'　　や　　[AAA],[BBB],[CCC]\nSQLのIN演算子の条件の羅列などに利用すると便利です"
-Attribute VALUEJOIN.VB_ProcData.VB_Invoke_Func = " \n18"
+Attribute VALUEJOIN.VB_ProcData.VB_Invoke_Func = " \n19"
     Dim i       As Long
     Dim objCell As Range
     Dim strL    As String '左端に付ける文字
@@ -32,7 +32,7 @@ Attribute VALUEJOIN.VB_ProcData.VB_Invoke_Func = " \n18"
         For Each objCell In 連結セル(i)
             If Not IsError(objCell.Value) Then
                 If objCell.Value <> "" Then
-                    VALUEJOIN = VALUEJOIN & 区切り文字 & strL & objCell.Text & strR
+                    VALUEJOIN = VALUEJOIN & 区切り文字 & strL & objCell.TEXT & strR
                 End If
             End If
         Next
@@ -48,7 +48,7 @@ End Function
 '*****************************************************************************
 Public Function GetSQLRecordset(ByRef objSQLCell As Range, ParamArray Dummy()) As Variant
 Attribute GetSQLRecordset.VB_Description = "SQLの実行結果を2次元配列で返します\n範囲を指定して配列数式形式(Ctrl+Shift+Enter)で取り出してください"
-Attribute GetSQLRecordset.VB_ProcData.VB_Invoke_Func = " \n18"
+Attribute GetSQLRecordset.VB_ProcData.VB_Invoke_Func = " \n19"
 On Error GoTo ErrHandle
     'SQLを取得し、構文チェックを実施する
     Dim clsDBAccess  As New DBAccess
@@ -70,7 +70,7 @@ End Function
 '*****************************************************************************
 Public Function ReplaceCellRef(ByRef objSQLCell As Range) As String
 Attribute ReplaceCellRef.VB_Description = "セル参照の反映とコメント削除を実行した後の、データベースに渡すSQLを表示します"
-Attribute ReplaceCellRef.VB_ProcData.VB_Invoke_Func = " \n18"
+Attribute ReplaceCellRef.VB_ProcData.VB_Invoke_Func = " \n19"
     ReplaceCellRef = ReplaceCellReference(objSQLCell)
 End Function
 

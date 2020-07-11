@@ -29,9 +29,9 @@ Public Sub MakeSQL()
         For i = 1 To objArea.Columns.Count
             If strSELECT = "" Then
                 strSELECT = "SELECT DISTINCT"
-                strSELECT = strSELECT & vbCrLf & "       [" & objArea(1, i).Text & "]"
+                strSELECT = strSELECT & vbCrLf & "       [" & objArea(1, i).TEXT & "]"
             Else
-                strSELECT = strSELECT & vbCrLf & "     , [" & objArea(1, i).Text & "]"
+                strSELECT = strSELECT & vbCrLf & "     , [" & objArea(1, i).TEXT & "]"
             End If
         Next
     Next
@@ -73,103 +73,49 @@ ErrHandle:
 End Sub
 
 '*****************************************************************************
-'[概要] SQL文を実行する
-'[引数] なし
+'[概要] SQLを実行する
+'[引数] 1:Select文用,2:更新系用
 '[戻値] なし
 '*****************************************************************************
-Public Sub ExecuteSQL()
+Public Sub ExecuteSQL1()
+    Call ExecuteSQL(True)
+End Sub
+Public Sub ExecuteSQL2()
+    Call ExecuteSQL(False)
+End Sub
+
+'*****************************************************************************
+'[概要] SQL文を実行する
+'[引数] True:Select文、False:更新系SQL
+'[戻値] なし
+'*****************************************************************************
+Private Sub ExecuteSQL(ByVal IsSelect As Boolean)
     If ActiveWorkbook.Path = "" Then
-'        Call MsgBox("一度も保存されていないファイルでは実行できません")
-'        Exit Sub
+        Call MsgBox("一度も保存されていないファイルはエラーになることがあります")
     End If
     
     If Selection Is Nothing Then
         Exit Sub
     End If
     If Not (TypeOf Selection Is Range) Then
-        Call ActiveCell.Select
+        Exit Sub
     End If
-    Dim objCurrentSheet As Worksheet
-    Set objCurrentSheet = ActiveSheet
     
     Dim objSQLCell As Range
-    Set objSQLCell = SelectCell("SQLの入力されたセルを選択してください", Selection)
+    Set objSQLCell = Selection
     If objSQLCell Is Nothing Then
         Exit Sub
-    Else
-        Call objCurrentSheet.Activate
     End If
     
     Dim strSQL As String
     strSQL = ReplaceCellReference(objSQLCell)
-    If IsSelect(strSQL) = True Then
+    
+    If IsSelect Then
         Call ShowRecord(strSQL)
     Else
         Call Execute(strSQL)
     End If
 End Sub
-
-'*****************************************************************************
-'[概要] SELECT文かどうか判定する
-'[引数] SQL
-'[戻値] True：SELECT文
-'*****************************************************************************
-Private Function IsSelect(ByVal strSQL As String) As Boolean
-    strSQL = DeleteEtc(strSQL)
-    strSQL = UCase(strSQL)
-    strSQL = Replace(strSQL, vbLf, " ")  '改行を空白に変換
-    strSQL = Trim(strSQL)
-    If Left(strSQL, 4) = "WITH" Then
-        IsSelect = True
-        Exit Function
-    End If
-    
-    If Left(strSQL, 6) <> "SELECT" And Left(strSQL, 9) <> "TRANSFORM" Then
-        IsSelect = False
-        Exit Function
-    End If
-    
-    'SELECT * INTO 文はデータベースを更新するため、Falseとする
-    If FindINTO(strSQL) = True Then
-        IsSelect = False
-    Else
-        IsSelect = True
-    End If
-End Function
-
-'*****************************************************************************
-'[概要] SQLのコメントや文字列リテラルを削除する
-'[引数] コメント削除前のSQL
-'[戻値] コメント削除後のSQL
-'*****************************************************************************
-Private Function DeleteEtc(ByVal strSQL As String) As String
-On Error GoTo ErrHandle
-    Dim objRegExp As Object
-    Set objRegExp = CreateObject("VBScript.RegExp")
-    objRegExp.Global = True
-    
-    ' 'xxx' or "xxx" or [xxx] に含まれる文字列はINTOを含めてすべて削除する
-    objRegExp.Pattern = "'.+?'|"".+?""|\[.+?\]"
-    strSQL = objRegExp.Replace(strSQL, "")
-ErrHandle:
-    DeleteEtc = strSQL
-End Function
-
-'*****************************************************************************
-'[概要] INTO句があるかどうか判定する
-'[引数] SQL
-'[戻値] True：INTO句あり
-'*****************************************************************************
-Private Function FindINTO(ByVal strSQL As String) As Boolean
-On Error GoTo ErrHandle
-    Dim objRegExp As Object
-    Set objRegExp = CreateObject("VBScript.RegExp")
-    
-    '単語のINTOを検索
-    objRegExp.Pattern = "\bINTO\b"
-    FindINTO = objRegExp.Test(strSQL)
-ErrHandle:
-End Function
 
 '*****************************************************************************
 '[概要] DDLまたはDMLのSQLを実行する
@@ -203,6 +149,11 @@ End Sub
 '*****************************************************************************
 Private Sub ShowRecord(ByVal strSQL As String)
 On Error GoTo ErrHandle
+    'SQLの構文チェックを実施する
+    Dim clsDBAccess  As New DBAccess
+    clsDBAccess.SQL = strSQL
+    Call clsDBAccess.CheckSQL
+
     'セルを選択させる
     Dim objTopLeftCell As Range
     Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
@@ -211,18 +162,13 @@ On Error GoTo ErrHandle
     Else
         '選択領域の左上のセルを設定
         Set objTopLeftCell = objTopLeftCell.Cells(1)
+        
+        '結果のシートを表示して、結果のセルを選択
+        Call objTopLeftCell.Worksheet.Activate
+        Call objTopLeftCell.Select
+        DoEvents
     End If
     
-    '結果のシートを表示して、結果のセルを選択
-    Call objTopLeftCell.Worksheet.Activate
-    Call objTopLeftCell.Select
-    DoEvents
-    
-    'SQLの構文チェックを実施する
-    Dim clsDBAccess  As New DBAccess
-    clsDBAccess.SQL = strSQL
-    Call clsDBAccess.CheckSQL
-
     'SELECT文の実行結果のレコードセットをセルに設定
     Dim dblTime As Double
     Dim lngRecCount As Long
@@ -247,7 +193,7 @@ Public Function SelectCell(ByVal strMsg As String, ByRef objCurrentCell As Range
     With frmSelectCell
         .Label.Caption = strMsg
         Call objCurrentCell.Worksheet.Activate
-        .RefEdit.Text = objCurrentCell.AddressLocal
+        .RefEdit.TEXT = objCurrentCell.AddressLocal
         Call .Show
         If .IsOK = True Then
             strCell = .RefEdit
@@ -342,7 +288,7 @@ Private Function GetRangeText(ByRef objRange As Range) As String
     
     '単一セルの時
     If objRange.Count = 1 Or objRange.Address = objRange(1, 1).MergeArea.Address Then
-        GetRangeText = objRange(1).Text
+        GetRangeText = objRange(1).TEXT
         Exit Function
     End If
     
@@ -373,3 +319,57 @@ Private Function GetRangeText(ByRef objRange As Range) As String
         Next
     End If
 End Function
+
+'*****************************************************************************
+'[概要] データベース接続子を作成する
+'[引数] なし
+'[戻値] なし
+'*****************************************************************************
+Public Sub MakeConnectStr()
+    Const EXCEL = "[EXCEL 12.0;DATABASE={File}]"
+    Const ACCESS1 = "[MS ACCESS;DATABASE={File}]"
+    Const ACCESS2 = "[MS ACCESS;DATABASE={File};PWD={Password}]"
+    Const TEXT = "SELECT * " & vbCrLf & "  FROM [TEXT;DATABASE={Folder}].[{File}]"
+
+On Error GoTo ErrHandle
+    Dim vDBName As Variant
+    vDBName = Application.GetOpenFilename("Excel,*.xl*,Access,*.md?;*.accdb,テキスト,*.txt;*.csv,すべて,*.*")
+    If vDBName = False Then
+        Exit Sub
+    End If
+    
+    Dim strExt As String
+    Dim strFolder As String
+    Dim strFile As String
+    With CreateObject("Scripting.FileSystemObject")
+        strExt = LCase(.GetExtensionName(vDBName))
+        strFolder = .GetParentFolderName(vDBName)
+        strFile = .GetFileName(vDBName)
+    End With
+        
+    Dim strConnect  As String
+    Select Case True
+    Case Left(strExt, 2) = "xl"
+        strConnect = Replace(EXCEL, "{File}", vDBName)
+    Case Left(strExt, 2) = "md" Or strExt = "accdb"
+        Dim strPass As String
+        strPass = GetPassword(vDBName)
+        If strPass = "" Then
+            strConnect = Replace(ACCESS1, "{File}", vDBName)
+        Else
+            strConnect = Replace(ACCESS2, "{File}", vDBName)
+            strConnect = Replace(strConnect, "{Password}", strPass)
+        End If
+    Case Else
+        strConnect = Replace(TEXT, "{Folder}", strFolder)
+        strConnect = Replace(strConnect, "{File}", strFile)
+    End Select
+    
+    Call SetClipbordText(strConnect)
+    Call MsgBox("以下のデータベース接続子をクリップボードにコピーしました。" & vbCrLf & strConnect)
+    Exit Sub
+ErrHandle:
+    'エラーメッセージを表示
+    Call MsgBox(Err.Description)
+End Sub
+
