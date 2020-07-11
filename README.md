@@ -2,7 +2,7 @@
 EXCELでかんたんにエクセルファイルやアクセスファイルに対してSQLを実行できるツールです
 
 # 外観
-![外観](https://user-images.githubusercontent.com/50874513/69812391-6710ae80-1233-11ea-8379-5251d57de4f5.png)
+![外観](https://user-images.githubusercontent.com/50874513/87218693-f36d7d00-c38f-11ea-9f63-d2f0525867e1.png)
 
 # サンプル画面
 サブクエリ部分を別セルで記述可      
