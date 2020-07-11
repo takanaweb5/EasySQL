@@ -15,6 +15,11 @@ EXCELでかんたんにエクセルファイルやアクセスファイルに対
 # 詳しい説明
 [EXCELでEXCELファイルおよびACCESSのデータに対してかんたんにSQLを実行するツール](https://qiita.com/takahasinaoki/items/7b3918f781a74ae6394f)
 
+
+# ダウンロード
+https://github.com/takanaweb5/EasySQL/releases
+
+
 ### ライセンス
 MITライセンスに準拠します
 Copyright (c) 2019 TAKAHASHI Naoki(JPN) 高橋
