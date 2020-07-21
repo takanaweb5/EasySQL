@@ -5,37 +5,37 @@ Option Private Module
 Private Const C_CONNECTSTR = "Provider={Provider};Data Source=""{FileName}"";Jet OLEDB:Database Password={Password};"
 Private Const C_OLDTYPE = "Jet OLEDB:Engine Type=5;"
 Private Const C_PROVIDER = "Microsoft.ACE.OLEDB.12.0"
-Private Const C_WARNING = "/* [...]•”•ª‚ğƒe[ƒuƒ‹–¼‚É•ÏX‚µ‚Ä‚©‚çSQL‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢ */"
+Private Const C_WARNING = "/* [...]éƒ¨åˆ†ã‚’ãƒ†ãƒ¼ãƒ–ãƒ«åã«å¤‰æ›´ã—ã¦ã‹ã‚‰SQLã‚’å®Ÿè¡Œã—ã¦ãã ã•ã„ */"
 
 '*****************************************************************************
-'[ŠT—v] ƒf[ƒ^ƒx[ƒXƒtƒ@ƒCƒ‹‚ğì¬‚·‚éiAccessƒtƒ@ƒCƒ‹‚Ì‚İ‰Âj
-'[ˆø”] ‚È‚µ
-'[–ß’l] ‚È‚µ
+'[æ¦‚è¦] ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹ï¼ˆAccessãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿å¯ï¼‰
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ãªã—
 '*****************************************************************************
 Public Sub CreateDB()
 On Error GoTo ErrHandle
     Dim vDBName As Variant
-    vDBName = Application.GetSaveAsFilename("", "2002-2003,*.mdb,2007-,*.accdb,‘S‚Ä‚Ìƒtƒ@ƒCƒ‹,*.*", , "V‚µ‚¢ƒf[ƒ^ƒx[ƒX")
+    vDBName = Application.GetSaveAsFilename("", "2002-2003,*.mdb,2007-,*.accdb,å…¨ã¦ã®ãƒ•ã‚¡ã‚¤ãƒ«,*.*", , "æ–°ã—ã„ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹")
     If vDBName = False Then
         Exit Sub
     End If
     
-    Call CreateMDBFile(vDBName, InputBox("ƒpƒXƒ[ƒh‚ğİ’è‚·‚éê‡‚Ì‚İƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢"))
+    Call CreateMDBFile(vDBName, InputBox("ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’è¨­å®šã™ã‚‹å ´åˆã®ã¿ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„"))
     Exit Sub
 ErrHandle:
-    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ŠT—v] Accessƒtƒ@ƒCƒ‹‚Ìƒe[ƒuƒ‹î•ñ‚ğ•\¦‚·‚é
-'[ˆø”] ‚È‚µ
-'[–ß’l] ‚È‚µ
+'[æ¦‚è¦] Accessãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ†ãƒ¼ãƒ–ãƒ«æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ãªã—
 '*****************************************************************************
 Public Sub ShowTables()
 On Error GoTo ErrHandle
     Dim vDBName As Variant
-    vDBName = Application.GetOpenFilename("Access,*.mdb;*.accdb,‚·‚×‚Ä,*.*")
+    vDBName = Application.GetOpenFilename("Access,*.mdb;*.accdb,ã™ã¹ã¦,*.*")
     If vDBName = False Then
         Exit Sub
     End If
@@ -46,16 +46,16 @@ On Error GoTo ErrHandle
     objCatalog.ActiveConnection = GetConnection(vDBName)
         
     Dim objTopLeftCell As Range
-    Set objTopLeftCell = SelectCell("Œ‹‰Ê‚ğ•\¦‚·‚éƒZƒ‹‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", Selection)
+'    Set objTopLeftCell = SelectCell("çµæœã‚’è¡¨ç¤ºã™ã‚‹ã‚»ãƒ«ã‚’é¸æŠã—ã¦ãã ã•ã„", Selection)
     If objTopLeftCell Is Nothing Then
         Exit Sub
     End If
     
-    'Œ©o‚µİ’è
-    objTopLeftCell.Cells(1, 1) = "ƒe[ƒuƒ‹–¼"
-    objTopLeftCell.Cells(1, 2) = "ƒ^ƒCƒv"
+    'è¦‹å‡ºã—è¨­å®š
+    objTopLeftCell.Cells(1, 1) = "ãƒ†ãƒ¼ãƒ–ãƒ«å"
+    objTopLeftCell.Cells(1, 2) = "ã‚¿ã‚¤ãƒ—"
     
-    '–¾×‚Ìİ’è
+    'æ˜ç´°ã®è¨­å®š
     Dim i As Long
     i = 1
     For Each objTable In objCatalog.Tables
@@ -67,14 +67,14 @@ On Error GoTo ErrHandle
     Next
     Exit Sub
 ErrHandle:
-    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ŠT—v] ƒf[ƒ^ƒx[ƒXÚ‘±ƒIƒuƒWƒFƒNƒg‚ğæ“¾‚·‚é
-'[ˆø”] MDBƒtƒ@ƒCƒ‹–¼AƒpƒXƒ[ƒh
-'[–ß’l] ƒf[ƒ^ƒx[ƒXÚ‘±ƒIƒuƒWƒFƒNƒg
+'[æ¦‚è¦] ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹æ¥ç¶šã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å–å¾—ã™ã‚‹
+'[å¼•æ•°] MDBãƒ•ã‚¡ã‚¤ãƒ«åã€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰
+'[æˆ»å€¤] ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹æ¥ç¶šã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 '*****************************************************************************
 Private Function GetConnection(ByVal strFileName As String) As Object
     Set GetConnection = CreateObject("ADODB.Connection")
@@ -88,18 +88,18 @@ Private Function GetConnection(ByVal strFileName As String) As Object
     strErr = Err.Description
     On Error GoTo 0
     
-    If InStr(1, strErr, "ƒpƒXƒ[ƒh") > 0 Then
-        Call GetConnection.Open(GetConStr(strFileName, InputBox("ƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢")))
+    If InStr(1, strErr, "ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰") > 0 Then
+        Call GetConnection.Open(GetConStr(strFileName, InputBox("ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„")))
     Else
-        'ƒGƒ‰[‚ÌÄì¬
+        'ã‚¨ãƒ©ãƒ¼ã®å†ä½œæˆ
         Call GetConnection.Open(GetConStr(strFileName))
     End If
 End Function
 
 '*****************************************************************************
-'[ŠT—v] ƒf[ƒ^ƒx[ƒX‚ÌÚ‘±•¶š—ñ‚ğæ“¾‚·‚é
-'[ˆø”] MDBƒtƒ@ƒCƒ‹–¼AƒpƒXƒ[ƒhA2002-2003Œ`®‚Ìmdbƒtƒ@ƒCƒ‹‚©‚Ç‚¤‚©
-'[–ß’l] ƒf[ƒ^ƒx[ƒXÚ‘±•¶š—ñ
+'[æ¦‚è¦] ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã®æ¥ç¶šæ–‡å­—åˆ—ã‚’å–å¾—ã™ã‚‹
+'[å¼•æ•°] MDBãƒ•ã‚¡ã‚¤ãƒ«åã€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã€2002-2003å½¢å¼ã®mdbãƒ•ã‚¡ã‚¤ãƒ«ã‹ã©ã†ã‹
+'[æˆ»å€¤] ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹æ¥ç¶šæ–‡å­—åˆ—
 '*****************************************************************************
 Private Function GetConStr(ByVal strFileName As String, Optional ByVal strPassword As String = "", Optional ByVal blnOldType As Boolean = False) As String
     If blnOldType Then
@@ -113,9 +113,9 @@ Private Function GetConStr(ByVal strFileName As String, Optional ByVal strPasswo
 End Function
 
 '*****************************************************************************
-'[ŠT—v] MDBƒtƒ@ƒCƒ‹‚ğì¬‚·‚é
-'[ˆø”] MDBƒtƒ@ƒCƒ‹–¼AƒpƒXƒ[ƒh
-'[–ß’l] ‚È‚µ
+'[æ¦‚è¦] MDBãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã™ã‚‹
+'[å¼•æ•°] MDBãƒ•ã‚¡ã‚¤ãƒ«åã€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰
+'[æˆ»å€¤] ãªã—
 '*****************************************************************************
 Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPassword As String = "")
     With CreateObject("ADOX.Catalog")
@@ -124,9 +124,9 @@ Private Sub CreateMDBFile(ByVal strFileName As String, Optional ByVal strPasswor
 End Sub
 
 '*****************************************************************************
-'[ŠT—v] ƒe[ƒuƒ‹ƒCƒ“ƒ|[ƒg—p‚ÌSQL‚ğì¬‚·‚é
-'[ˆø”] ‚È‚µ
-'[–ß’l] ‚È‚µ
+'[æ¦‚è¦] ãƒ†ãƒ¼ãƒ–ãƒ«ã‚¤ãƒ³ãƒãƒ¼ãƒˆç”¨ã®SQLã‚’ä½œæˆã™ã‚‹
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ãªã—
 '*****************************************************************************
 Public Sub MakeImportSQL()
 On Error GoTo ErrHandle
@@ -137,16 +137,16 @@ On Error GoTo ErrHandle
     End If
     
     Dim objTable As Range
-    Set objTable = SelectCell("ƒCƒ“ƒ|[ƒg‚·‚éƒf[ƒ^—Ìˆæ‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", Selection)
+    Set objTable = SelectCell("ã‚¤ãƒ³ãƒãƒ¼ãƒˆã™ã‚‹ãƒ‡ãƒ¼ã‚¿é ˜åŸŸã‚’é¸æŠã—ã¦ãã ã•ã„", Selection)
     If objTable Is Nothing Then
         Exit Sub
     End If
 
     Dim lngSelect As Long
     Dim strMsg As String
-    strMsg = "‚¢‚¸‚ê‚©‚ğ‘I‘ğ‚µ‚Ä‰º‚³‚¢" & vbCrLf
-    strMsg = strMsg & "@u ‚Í‚¢ v¥¥¥¥ Šù‘¶‚Ìƒe[ƒuƒ‹‚É’Ç‰Á‚·‚é" & vbCrLf
-    strMsg = strMsg & "@u‚¢‚¢‚¦v¥¥¥¥ V‚µ‚­ƒe[ƒuƒ‹‚ğì¬‚·‚é"
+    strMsg = "ã„ãšã‚Œã‹ã‚’é¸æŠã—ã¦ä¸‹ã•ã„" & vbCrLf
+    strMsg = strMsg & "ã€€ã€Œ ã¯ã„ ã€ï½¥ï½¥ï½¥ï½¥ æ—¢å­˜ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã«è¿½åŠ ã™ã‚‹" & vbCrLf
+    strMsg = strMsg & "ã€€ã€Œã„ã„ãˆã€ï½¥ï½¥ï½¥ï½¥ æ–°ã—ããƒ†ãƒ¼ãƒ–ãƒ«ã‚’ä½œæˆã™ã‚‹"
     lngSelect = MsgBox(strMsg, vbYesNoCancel + vbDefaultButton2)
     If lngSelect = vbCancel Then
         Exit Sub
@@ -173,14 +173,14 @@ On Error GoTo ErrHandle
     Call SetClipbordText(strSQL)
     Exit Sub
 ErrHandle:
-    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ŠT—v] ƒe[ƒuƒ‹íœ—p‚ÌSQL‚ğì¬‚·‚é
-'[ˆø”] ‚È‚µ
-'[–ß’l] ‚È‚µ
+'[æ¦‚è¦] ãƒ†ãƒ¼ãƒ–ãƒ«å‰Šé™¤ç”¨ã®SQLã‚’ä½œæˆã™ã‚‹
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ãªã—
 '*****************************************************************************
 Public Sub MakeDeleteTableSQL()
 On Error GoTo ErrHandle
@@ -192,9 +192,9 @@ On Error GoTo ErrHandle
     
     Dim lngSelect As Long
     Dim strMsg As String
-    strMsg = "‚¢‚¸‚ê‚©‚ğ‘I‘ğ‚µ‚Ä‰º‚³‚¢" & vbCrLf
-    strMsg = strMsg & "@u ‚Í‚¢ v¥¥¥¥ ƒe[ƒuƒ‹‚Ìƒf[ƒ^‚ğ‚·‚×‚Äíœ‚·‚é" & vbCrLf
-    strMsg = strMsg & "@u‚¢‚¢‚¦v¥¥¥¥ ƒe[ƒuƒ‹©‘Ì‚ğíœ‚·‚é"
+    strMsg = "ã„ãšã‚Œã‹ã‚’é¸æŠã—ã¦ä¸‹ã•ã„" & vbCrLf
+    strMsg = strMsg & "ã€€ã€Œ ã¯ã„ ã€ï½¥ï½¥ï½¥ï½¥ ãƒ†ãƒ¼ãƒ–ãƒ«ã®ãƒ‡ãƒ¼ã‚¿ã‚’ã™ã¹ã¦å‰Šé™¤ã™ã‚‹" & vbCrLf
+    strMsg = strMsg & "ã€€ã€Œã„ã„ãˆã€ï½¥ï½¥ï½¥ï½¥ ãƒ†ãƒ¼ãƒ–ãƒ«è‡ªä½“ã‚’å‰Šé™¤ã™ã‚‹"
     lngSelect = MsgBox(strMsg, vbYesNoCancel + vbDefaultButton2)
     If lngSelect = vbCancel Then
         Exit Sub
@@ -211,14 +211,14 @@ On Error GoTo ErrHandle
     Call SetClipbordText(strSQL)
     Exit Sub
 ErrHandle:
-    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ŠT—v] ƒNƒGƒŠì¬—p‚ÌSQL‚ğì¬‚·‚é
-'[ˆø”] ‚È‚µ
-'[–ß’l] ‚È‚µ
+'[æ¦‚è¦] ã‚¯ã‚¨ãƒªä½œæˆç”¨ã®SQLã‚’ä½œæˆã™ã‚‹
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ãªã—
 '*****************************************************************************
 Public Sub MakeQuerySQL()
 On Error GoTo ErrHandle
@@ -232,19 +232,19 @@ On Error GoTo ErrHandle
     strSQL = "CREATE VIEW " & strDB & " AS" & vbCrLf
     strSQL = strSQL & "select_statement"
     
-    Call MsgBox(Replace(GetMessage(), "ƒe[ƒuƒ‹–¼", "ƒNƒGƒŠ–¼"))
-    strSQL = "/* [...]•”•ª‚ğì¬‚·‚éƒNƒGƒŠ–¼‚É•ÏX‚µAselect_statement‚Ì•”•ª‚ÉSELECT•¶‚ğ“ü—Í‚µ‚ÄSQL‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢ */" & vbCrLf & strSQL
+    Call MsgBox(Replace(GetMessage(), "ãƒ†ãƒ¼ãƒ–ãƒ«å", "ã‚¯ã‚¨ãƒªå"))
+    strSQL = "/* [...]éƒ¨åˆ†ã‚’ä½œæˆã™ã‚‹ã‚¯ã‚¨ãƒªåã«å¤‰æ›´ã—ã€select_statementã®éƒ¨åˆ†ã«SELECTæ–‡ã‚’å…¥åŠ›ã—ã¦SQLã‚’å®Ÿè¡Œã—ã¦ãã ã•ã„ */" & vbCrLf & strSQL
     Call SetClipbordText(strSQL)
     Exit Sub
 ErrHandle:
-    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ŠT—v] ƒNƒGƒŠíœ—p‚ÌSQL‚ğì¬‚·‚é
-'[ˆø”] ‚È‚µ
-'[–ß’l] ‚È‚µ
+'[æ¦‚è¦] ã‚¯ã‚¨ãƒªå‰Šé™¤ç”¨ã®SQLã‚’ä½œæˆã™ã‚‹
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ãªã—
 '*****************************************************************************
 Public Sub MakeDeleteQuerySQL()
 On Error GoTo ErrHandle
@@ -257,33 +257,33 @@ On Error GoTo ErrHandle
     Dim strSQL As String
     strSQL = "DROP VIEW " & strDB
     
-    Call MsgBox(Replace(GetMessage(), "ƒe[ƒuƒ‹–¼", "ƒNƒGƒŠ–¼"))
-    strSQL = Replace(C_WARNING, "ƒe[ƒuƒ‹–¼", "ƒNƒGƒŠ–¼") & vbCrLf & strSQL
+    Call MsgBox(Replace(GetMessage(), "ãƒ†ãƒ¼ãƒ–ãƒ«å", "ã‚¯ã‚¨ãƒªå"))
+    strSQL = Replace(C_WARNING, "ãƒ†ãƒ¼ãƒ–ãƒ«å", "ã‚¯ã‚¨ãƒªå") & vbCrLf & strSQL
     Call SetClipbordText(strSQL)
     Exit Sub
 ErrHandle:
-    'ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+    'ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
     Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
-'[ŠT—v] ƒ_ƒCƒAƒƒO‚Éo—Í‚·‚éƒƒbƒZ[ƒW‚ğ•ÒW‚·‚é
-'[ˆø”] ‚È‚µ
-'[–ß’l] ƒ_ƒCƒAƒƒO‚Éo—Í‚·‚éƒƒbƒZ[ƒW
+'[æ¦‚è¦] ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã«å‡ºåŠ›ã™ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ç·¨é›†ã™ã‚‹
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã«å‡ºåŠ›ã™ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
 '*****************************************************************************
 Private Function GetMessage() As String
-    GetMessage = "SQL‚ğƒNƒŠƒbƒvƒ{[ƒh‚ÉƒRƒs[‚µ‚Ü‚µ‚½B" & vbCrLf
-    GetMessage = GetMessage & " [...]•”•ª‚ğƒe[ƒuƒ‹–¼‚É•ÏX‚µ‚ÄSQL‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢B"
+    GetMessage = "SQLã‚’ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«ã‚³ãƒ”ãƒ¼ã—ã¾ã—ãŸã€‚" & vbCrLf
+    GetMessage = GetMessage & " [...]éƒ¨åˆ†ã‚’ãƒ†ãƒ¼ãƒ–ãƒ«åã«å¤‰æ›´ã—ã¦SQLã‚’å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚"
 End Function
 
 '*****************************************************************************
-'[ŠT—v] ƒf[ƒ^ƒx[ƒXÚ‘±¯•Êq‚ğæ“¾‚·‚é
-'[ˆø”] ‚È‚µ
-'[–ß’l] —áF[MS ACCESS;DATABASE=C:\TMP\sample.accdb;PWD=1234].[...]
+'[æ¦‚è¦] ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹æ¥ç¶šè­˜åˆ¥å­ã‚’å–å¾—ã™ã‚‹
+'[å¼•æ•°] ãªã—
+'[æˆ»å€¤] ä¾‹ï¼š[MS ACCESS;DATABASE=C:\TMP\sample.accdb;PWD=1234].[...]
 '*****************************************************************************
 Private Function GetDatabaseStr() As String
     Dim vDBName As Variant
-    vDBName = Application.GetOpenFilename("Access,*.mdb;*.accdb,‚·‚×‚Ä,*.*")
+    vDBName = Application.GetOpenFilename("Access,*.mdb;*.accdb,ã™ã¹ã¦,*.*")
     If vDBName = False Then
         Exit Function
     End If
@@ -302,9 +302,9 @@ Private Function GetDatabaseStr() As String
 End Function
 
 '*****************************************************************************
-'[ŠT—v] ƒf[ƒ^ƒx[ƒX‚ÌƒpƒXƒ[ƒh‚ğæ“¾‚·‚é(ƒpƒXƒ[ƒh‚Ì‘Ã“–«‚Í–¢ƒ`ƒFƒbƒN)
-'[ˆø”] MDBƒtƒ@ƒCƒ‹–¼
-'[–ß’l] ƒpƒXƒ[ƒh(ƒpƒXƒ[ƒh–¢İ’è‚Ìƒtƒ@ƒCƒ‹‚Ì‚Í‹ó‚Ì•¶š—ñ)
+'[æ¦‚è¦] ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã®ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å–å¾—ã™ã‚‹(ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã®å¦¥å½“æ€§ã¯æœªãƒã‚§ãƒƒã‚¯)
+'[å¼•æ•°] MDBãƒ•ã‚¡ã‚¤ãƒ«å
+'[æˆ»å€¤] ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰(ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰æœªè¨­å®šã®ãƒ•ã‚¡ã‚¤ãƒ«ã®æ™‚ã¯ç©ºã®æ–‡å­—åˆ—)
 '*****************************************************************************
 Public Function GetPassword(ByVal strFileName As String) As String
     Dim objConnection As Object
@@ -312,7 +312,7 @@ Public Function GetPassword(ByVal strFileName As String) As String
     On Error Resume Next
     Call objConnection.Open(GetConStr(strFileName))
     If Err.Number = 0 Then
-        'ƒpƒXƒ[ƒh–¢İ’è‚Ì
+        'ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰æœªè¨­å®šã®æ™‚
         Call objConnection.Close
         Exit Function
     End If
@@ -321,8 +321,8 @@ Public Function GetPassword(ByVal strFileName As String) As String
     strErr = Err.Description
     On Error GoTo 0
     
-    If InStr(1, strErr, "ƒpƒXƒ[ƒh") > 0 Then
-        GetPassword = InputBox("ƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢")
+    If InStr(1, strErr, "ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰") > 0 Then
+        GetPassword = InputBox("ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„")
     End If
 End Function
 
