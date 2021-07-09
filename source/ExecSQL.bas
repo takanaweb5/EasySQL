@@ -29,28 +29,28 @@ Public Sub MakeSQL()
         For i = 1 To objArea.Columns.Count
             If strSELECT = "" Then
                 strSELECT = "SELECT DISTINCT"
-                strSELECT = strSELECT & vbCrLf & "       [" & objArea(1, i).TEXT & "]"
+                strSELECT = strSELECT & vbCrLf & "  [" & objArea(1, i).TEXT & "]"
             Else
-                strSELECT = strSELECT & vbCrLf & "     , [" & objArea(1, i).TEXT & "]"
+                strSELECT = strSELECT & vbCrLf & ", [" & objArea(1, i).TEXT & "]"
             End If
         Next
     Next
 
     'FROM句の設定
     If objSelection.Areas.Count = 1 And objSelection.Rows.Count > 1 Then
-        strFROM = Replace("  FROM [{Sheet}${Range}]", "{Sheet}", objSelection.Worksheet.Name)
+        strFROM = Replace("FROM [{Sheet}${Range}]", "{Sheet}", objSelection.Worksheet.Name)
         strFROM = Replace(strFROM, "{Range}", objSelection.AddressLocal(False, False, xlA1))
     Else
-        strFROM = Replace("  FROM [{Sheet}$]", "{Sheet}", objSelection.Worksheet.Name)
+        strFROM = Replace("FROM [{Sheet}$]", "{Sheet}", objSelection.Worksheet.Name)
     End If
     
     'その他の句の識別子のみ設定
     strSQL = strSELECT & vbCrLf & _
                strFROM & vbCrLf & _
-               " WHERE " & vbCrLf & _
-               " GROUP BY" & vbCrLf & _
+               "WHERE " & vbCrLf & _
+               "GROUP BY" & vbCrLf & _
                "HAVING " & vbCrLf & _
-               " ORDER BY"
+               "ORDER BY"
     
     Call SetClipbordText(strSQL)
     Dim strMsg As String
@@ -216,8 +216,6 @@ End Function
 '[戻値] セルの参照値を置換したSQL
 '*****************************************************************************
 Public Function ReplaceCellReference(ByRef objSQLCell As Range) As String
-Attribute ReplaceCellReference.VB_Description = "セル参照の反映とコメント削除を実行した後の、データベースに渡すSQLを表示します"
-Attribute ReplaceCellReference.VB_ProcData.VB_Invoke_Func = " \n19"
 On Error GoTo ErrHandle
     Dim objRegExp  As Object
     Dim objMatch   As Object
@@ -372,4 +370,5 @@ ErrHandle:
     'エラーメッセージを表示
     Call MsgBox(Err.Description)
 End Sub
+
 
