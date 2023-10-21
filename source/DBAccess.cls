@@ -9,11 +9,11 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Const C_CONNECTSTR1 = "Provider={Provider};Data Source=""{FileName}"";Extended Properties=""{Properties}"";"
+Private Const C_CONNECTSTR1 = "Provider={Provider};Data Source=""{FileName}"";Extended Properties=""{Database};{Headers}"";"
 Private Const C_PROVIDER = "Microsoft.ACE.OLEDB.12.0"
 'Private Const C_PROVIDER = "Microsoft.Jet.OLEDB.4.0"
-Private Const C_PROPERTIES = "Excel 12.0"
-'Private Const C_PROPERTIES = "Excel 8.0"
+Private Const C_DATABASE = "Excel 12.0"
+'Private Const C_DATABASE = "Excel 8.0"
 Private Const adOpenStatic = 3   'adOpenForwardOnly ではレコード件数が返ってこない
 Private Const adLockReadOnly = 1
 Private Const adCmdText = 1
@@ -29,6 +29,27 @@ Private Const MYPASS = "PWD={PWD};"                                 'パスワード
 Private Const C_CONNECTSTR2 = MYDRIVER & MYSERVER & MYDATABASE & MYUSER & MYPASS
 
 Private FSQL As String
+Private FHeaders As Boolean '最初の行を見出しとして扱うかどうか
+
+'*****************************************************************************
+'[概要] コンストラクタ
+'[引数] なし
+'[戻値] なし
+'*****************************************************************************
+Private Sub Class_Initialize()
+    FHeaders = True '最初の行を見出しとして扱う
+End Sub
+
+'*****************************************************************************
+'[プロパティ] Headers ※True=最初の行を見出しとして扱う
+'[引数] なし
+'*****************************************************************************
+Public Property Get Headers() As Boolean
+    Headers = FHeaders
+End Property
+Public Property Let Headers(ByVal blnHeaders As Boolean)
+    FHeaders = blnHeaders
+End Property
 
 '*****************************************************************************
 '[概要] データベースの接続文字列を取得する
@@ -39,7 +60,12 @@ Private Function GetConnection() As String
     GetConnection = C_CONNECTSTR1
     GetConnection = Replace(GetConnection, "{Provider}", C_PROVIDER)
     GetConnection = Replace(GetConnection, "{FileName}", ActiveWorkbook.FullName)
-    GetConnection = Replace(GetConnection, "{Properties}", C_PROPERTIES)
+    GetConnection = Replace(GetConnection, "{Database}", C_DATABASE)
+    If FHeaders Then
+        GetConnection = Replace(GetConnection, "{Headers}", "HDR=YES")
+    Else
+        GetConnection = Replace(GetConnection, "{Headers}", "HDR=NO")
+    End If
 End Function
 'Private Function GetConnection() As String
 '    GetConnection = C_CONNECTSTR2
@@ -151,15 +177,19 @@ Public Function ExecuteToArray(Optional ByVal strSQL As String = "") As Variant
     objRecordset.CursorLocation = adUseClient
     Call objRecordset.Open(strSQL, GetConnection(), adOpenStatic, adLockReadOnly)
 On Error GoTo ErrHandle
-    
-    ReDim vData(0 To objRecordset.RecordCount, 1 To objRecordset.Fields.Count) '(行,列)
+        
     Dim i As Long
     Dim j As Long
     
-    '0行目に見出しを設定する
-    For i = 1 To objRecordset.Fields.Count
-        vData(0, i) = objRecordset.Fields(i - 1).Name
-    Next
+    If FHeaders Then
+        ReDim vData(0 To objRecordset.RecordCount, 1 To objRecordset.Fields.Count) '(行,列)
+        '0行目に見出しを設定する
+        For i = 1 To objRecordset.Fields.Count
+            vData(0, i) = objRecordset.Fields(i - 1).Name
+        Next
+    Else
+        ReDim vData(1 To objRecordset.RecordCount, 1 To objRecordset.Fields.Count) '(行,列)
+    End If
     
     '明細の設定
     For j = 1 To objRecordset.RecordCount
@@ -220,4 +250,3 @@ On Error GoTo ErrHandle
 ErrHandle:
     DeleteComment = Replace(strSQL, Chr(0), vbLf)  'Chr(0)を改行に戻す
 End Function
-
