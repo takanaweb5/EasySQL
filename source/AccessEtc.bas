@@ -46,7 +46,8 @@ On Error GoTo ErrHandle
     objCatalog.ActiveConnection = GetConnection(vDBName)
         
     Dim objTopLeftCell As Range
-    Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
+'    Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
+    Set objTopLeftCell = ActiveCell
     If objTopLeftCell Is Nothing Then
         Exit Sub
     End If
