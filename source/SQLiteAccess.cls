@@ -127,13 +127,10 @@ End Function
 Public Function ExecuteToRange(ByRef objRange As Range, Optional ByVal strSQL As String = "") As Long
     Dim vData() As Variant
     vData = ExecuteToArray(strSQL)
-    
     Set objRange = objRange.Resize(UBound(vData, 1) - LBound(vData, 1) + 1, UBound(vData, 2) - LBound(vData, 2) + 1)
     objRange.Value = vData
-
     'NULL‚ÌƒZƒ‹‚ÍƒNƒŠƒA‚·‚é
     Call ClearNullCells(objRange)
-    
     ExecuteToRange = UBound(vData, 1)
 End Function
 

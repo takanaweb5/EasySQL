@@ -29,9 +29,9 @@ Public Sub MakeSQL()
         For i = 1 To objArea.Columns.Count
             If strSELECT = "" Then
                 strSELECT = "SELECT DISTINCT"
-                strSELECT = strSELECT & vbCrLf & "  [" & objArea(1, i).TEXT & "]"
+                strSELECT = strSELECT & vbCrLf & "  [" & objArea(1, i).Text & "]"
             Else
-                strSELECT = strSELECT & vbCrLf & ", [" & objArea(1, i).TEXT & "]"
+                strSELECT = strSELECT & vbCrLf & ", [" & objArea(1, i).Text & "]"
             End If
         Next
     Next
@@ -64,12 +64,13 @@ End Sub
 '[戻値] なし
 '*****************************************************************************
 Public Sub SetClipbordText(ByVal strText As String)
-On Error GoTo ErrHandle
-    Dim objCb As New DataObject
-    Call objCb.Clear
-    Call objCb.SetText(strText)
-    Call objCb.PutInClipboard
-ErrHandle:
+    With CreateObject("Forms.TextBox.1")
+        .MultiLine = True
+        .Text = strText
+        .SelStart = 0
+        .SelLength = .TextLength
+        .Copy
+    End With
 End Sub
 
 '*****************************************************************************
@@ -90,6 +91,7 @@ End Sub
 '[戻値] なし
 '*****************************************************************************
 Private Sub ExecuteSQL(ByVal IsSelect As Boolean)
+On Error GoTo ErrHandle
     If ActiveWorkbook.Path = "" Then
         Call MsgBox("一度も保存されていないファイルはエラーになることがあります")
     End If
@@ -101,41 +103,29 @@ Private Sub ExecuteSQL(ByVal IsSelect As Boolean)
         Exit Sub
     End If
     
+    If Left(ActiveWorkbook.FullName, 8) = "https://" Then
+        Call MsgBox("ファイルをダウンロードフォルダにコピーします")
+        Const TMP_FILE = "D:\Users\{USERID}\Downloads\_"
+        Call ActiveWorkbook.SaveAs(Replace(TMP_FILE, "{USERID}", Environ("USERNAME")) & ActiveWorkbook.Name)
+        Exit Sub
+    End If
+    
     Dim objSQLCell As Range
     Set objSQLCell = Selection
     If objSQLCell Is Nothing Then
         Exit Sub
     End If
     
-    Dim strSQL As String
-    strSQL = ReplaceCellReference(objSQLCell)
-    
-    If IsSelect Then
-        Call ShowRecord(strSQL)
-    Else
-        Call Execute(strSQL)
-    End If
-End Sub
-
-'*****************************************************************************
-'[概要] DDLまたはDMLのSQLを実行する
-'[引数] SQL
-'[戻値] なし
-'*****************************************************************************
-Private Sub Execute(ByVal strSQL As String)
-On Error GoTo ErrHandle
     'SQLの構文チェックを実施する
     Dim clsDBAccess  As New DBAccess
-    clsDBAccess.SQL = strSQL
+    clsDBAccess.SQL = ReplaceCellReference(objSQLCell)
     Call clsDBAccess.CheckSQL
     
-    'コマンドを実行
-    Dim dblTime As Double
-    Dim lngRecCount As Long
-    dblTime = Timer()
-    lngRecCount = clsDBAccess.Execute()
-    Call MsgBox("更新件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
-                "実行時間：" & Int(Timer() - dblTime) & " 秒")
+    If IsSelect Then
+        Call ShowRecord(clsDBAccess)
+    Else
+        Call Execute(clsDBAccess)
+    End If
     Exit Sub
 ErrHandle:
     'エラーメッセージを表示
@@ -143,17 +133,26 @@ ErrHandle:
 End Sub
 
 '*****************************************************************************
+'[概要] DDLまたはDMLのSQLを実行する
+'[引数] SQL
+'[戻値] なし
+'*****************************************************************************
+Private Sub Execute(ByRef clsDBAccess As DBAccess)
+    'コマンドを実行
+    Dim dblTime As Double
+    Dim lngRecCount As Long
+    dblTime = Timer()
+    lngRecCount = clsDBAccess.Execute()
+    Call MsgBox("更新件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
+                "実行時間：" & Int(Timer() - dblTime) & " 秒")
+End Sub
+
+'*****************************************************************************
 '[概要] SELECT文の結果を表形式でセルに展開する
 '[引数] SQL
 '[戻値] なし
 '*****************************************************************************
-Private Sub ShowRecord(ByVal strSQL As String)
-On Error GoTo ErrHandle
-    'SQLの構文チェックを実施する
-    Dim clsDBAccess  As New DBAccess
-    clsDBAccess.SQL = strSQL
-    Call clsDBAccess.CheckSQL
-
+Private Sub ShowRecord(ByRef clsDBAccess As DBAccess)
     'セルを選択させる
     Dim objTopLeftCell As Range
     Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
@@ -176,10 +175,6 @@ On Error GoTo ErrHandle
     lngRecCount = clsDBAccess.ExecuteToRange(objTopLeftCell)
     Call MsgBox("レコード件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
                 "実行時間：" & Int(Timer() - dblTime) & " 秒")
-    Exit Sub
-ErrHandle:
-    'エラーメッセージを表示
-    Call MsgBox(Err.Description)
 End Sub
 
 '*****************************************************************************
@@ -193,7 +188,7 @@ Public Function SelectCell(ByVal strMsg As String, ByRef objCurrentCell As Range
     With frmSelectCell
         .Label.Caption = strMsg
         Call objCurrentCell.Worksheet.Activate
-        .RefEdit.TEXT = objCurrentCell.AddressLocal
+        .RefEdit.Text = objCurrentCell.AddressLocal
         Call .Show
         If .IsOK = True Then
             strCell = .RefEdit
@@ -216,6 +211,8 @@ End Function
 '[戻値] セルの参照値を置換したSQL
 '*****************************************************************************
 Public Function ReplaceCellReference(ByRef objSQLCell As Range) As String
+Attribute ReplaceCellReference.VB_Description = "セル参照の反映とコメント削除を実行した後の、データベースに渡すSQLを表示します"
+Attribute ReplaceCellReference.VB_ProcData.VB_Invoke_Func = " \n19"
 On Error GoTo ErrHandle
     Dim objRegExp  As Object
     Dim objMatch   As Object
@@ -283,25 +280,29 @@ End Function
 Private Function GetRangeText(ByRef objRange As Range) As String
     Dim i As Long
     Dim strCellText As String
+    Dim objCell As Range
     
     '単一セルの時
     If objRange.Count = 1 Or objRange.Address = objRange(1, 1).MergeArea.Address Then
-        GetRangeText = objRange(1).TEXT
+        GetRangeText = objRange(1).Text
         Exit Function
     End If
     
     '見出し選択時
     If objRange.Rows.Count = 1 Or objRange.Rows.Count = Rows.Count Then
-        '列数分LOOPし、各項目をカッコではさみコンマで連結　例：[姓], [名]
-        For i = 1 To objRange.Columns.Count
-            strCellText = objRange.Cells(1, i)
-            If strCellText <> "" Then
-                If GetRangeText = "" Then
-                    GetRangeText = "[" & strCellText & "]"
-                Else
-                    GetRangeText = GetRangeText & ",[" & strCellText & "]"
+        '領域の数だけLOOP
+        For Each objCell In objRange.Areas
+            '列数分LOOPし、各項目をカッコではさみコンマで連結　例：[姓], [名]
+            For i = 1 To objCell.Columns.Count
+                strCellText = objCell.Cells(1, i)
+                If strCellText <> "" Then
+                    If GetRangeText = "" Then
+                        GetRangeText = "[" & strCellText & "]"
+                    Else
+                        GetRangeText = GetRangeText & ",[" & strCellText & "]"
+                    End If
                 End If
-            End If
+            Next
         Next
     Else
         '行数分LOOPし、各セルの値を改行で連結
@@ -327,7 +328,7 @@ Public Sub MakeConnectStr()
     Const EXCEL = "[EXCEL 12.0;DATABASE={File}]"
     Const ACCESS1 = "[MS ACCESS;DATABASE={File}]"
     Const ACCESS2 = "[MS ACCESS;DATABASE={File};PWD={Password}]"
-    Const TEXT = "SELECT * " & vbCrLf & "  FROM [TEXT;DATABASE={Folder}].[{File}]"
+    Const Text = "[TEXT;DATABASE={Folder}].[{File}]"
 
 On Error GoTo ErrHandle
     Dim vDBName As Variant
@@ -359,7 +360,7 @@ On Error GoTo ErrHandle
             strConnect = Replace(strConnect, "{Password}", strPass)
         End If
     Case Else
-        strConnect = Replace(TEXT, "{Folder}", strFolder)
+        strConnect = Replace(Text, "{Folder}", strFolder)
         strConnect = Replace(strConnect, "{File}", strFile)
     End Select
     
@@ -370,5 +371,4 @@ ErrHandle:
     'エラーメッセージを表示
     Call MsgBox(Err.Description)
 End Sub
-
 
