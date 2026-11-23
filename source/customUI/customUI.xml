@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mso:customUI xmlns:doc="http://schemas.microsoft.com/office/2006/01/customui/currentDocument" xmlns:mso="http://schemas.microsoft.com/office/2006/01/customui">
+<mso:ribbon>
+<mso:tabs>
+<mso:tab id="UserTab1" label="EasySQL">
+<mso:group id="UserTab1_group1" label="SQL実行">
+<mso:button idQ="doc:ExecuteSQL1_1"    visible="true" size="large" label="SELECT実行"             imageMso="AccessFormDatasheet" onAction="ExecSQL.ExecuteSQL1"
+            supertip="SELECT文を実行して結果をセルに表示します" />
+<mso:button idQ="doc:ExecuteSQL2_1"    visible="true" size="large" label="SQL実行"                imageMso="OrgChartDataImport"  onAction="ExecSQL.ExecuteSQL2"
+            supertip="更新系のSQLを実行します" />
+<mso:button idQ="doc:MakeSQL_1"        visible="true" size="large" label="ひな型SQL作成"          imageMso="AdpViewSqlPane"      onAction="ExecSQL.MakeSQL"
+            supertip="選択されたセル範囲を対象にSELECT文のひな型を作成し、クリップボードにコピーします" />
+<mso:button idQ="doc:MakeConnectStr_1" visible="true" size="large" label="データベース接続子作成" imageMso="GanttDataExport"     onAction="ExecSQL.MakeConnectStr"
+            supertip="外部Excelファイル･Accessファイル･CSVファイルへのデータベース接続子を作成します" />
+</mso:group>
+
+<mso:group id="UserTab1_group2" label="Access">
+<mso:button idQ="doc:CreateDB_1"           visible="true" label="データベース作成"    imageMso="MicrosoftAccess"     onAction="ExecSQL.CreateDB"
+            supertip="Accessのデータベースファイルを作成します" />
+<mso:button idQ="doc:ShowTables_1"         visible="true" label="テーブル一覧表示"    imageMso="BulletListDefault"   onAction="ExecSQL.ShowTables"
+            supertip="Accessデータベースのテーブルの一覧を表示します" />
+<mso:button idQ="doc:Dummy_1"              visible="true" label=" " enabled="false"/>
+<mso:button idQ="doc:MakeImportSQL_1"      visible="true" label="インポート用SQL作成" showImage="false" onAction="ExecSQL.MakeImportSQL"
+            supertip="テーブルインポート用のSQLのひな型を作成し、クリップボードにコピーします" />
+<mso:button idQ="doc:MakeDeleteTableSQL_1" visible="true" label="削除用SQL作成"       showImage="false" onAction="ExecSQL.MakeDeleteTableSQL"
+            supertip="テーブル削除用のSQLのひな型を作成し、クリップボードにコピーします" />
+<mso:button idQ="doc:Dummy_2"              visible="true" label=" " enabled="false"/>
+<mso:button idQ="doc:MakeQuerySQL_1"       visible="true" label="クエリ作成用SQL作成" showImage="false" onAction="ExecSQL.MakeQuerySQL"
+            supertip="クエリ作成用のSQLのひな型を作成し、クリップボードにコピーします" />
+<mso:button idQ="doc:MakeDeleteQuerySQL_1" visible="true" label="クエリ削除用SQL作成" showImage="false" onAction="ExecSQL.MakeDeleteQuerySQL"
+            supertip="クエリ削除用のSQLのひな型を作成し、クリップボードにコピーします" />
+</mso:group>
+</mso:tab>
+</mso:tabs>
+</mso:ribbon>
+</mso:customUI>
