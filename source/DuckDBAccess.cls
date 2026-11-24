@@ -61,9 +61,27 @@ Private Declare PtrSafe Function duckdb_vector_get_data Lib "duckdb.dll" (ByVal 
 Private Declare PtrSafe Function duckdb_vector_get_validity Lib "duckdb.dll" (ByVal vector As LongPtr) As LongPtr
 Private Declare PtrSafe Function duckdb_validity_row_is_valid Lib "duckdb.dll" (ByVal validity As LongPtr, ByVal row As LongLong) As Byte
 
+' Appender関連
+Private Declare PtrSafe Function duckdb_appender_create Lib "duckdb.dll" (ByVal conn As LongPtr, ByVal schema As LongPtr, ByVal table As LongPtr, ByRef out_appender As LongPtr) As Long
+Private Declare PtrSafe Function duckdb_appender_end_row Lib "duckdb.dll" (ByVal appender As LongPtr) As Long
+Private Declare PtrSafe Function duckdb_appender_flush Lib "duckdb.dll" (ByVal appender As LongPtr) As Long
+Private Declare PtrSafe Function duckdb_appender_destroy Lib "duckdb.dll" (ByRef appender As LongPtr) As Long
+Private Declare PtrSafe Function duckdb_appender_error Lib "duckdb.dll" (ByVal appender As LongPtr) As LongPtr
+Private Declare PtrSafe Function duckdb_append_null Lib "duckdb.dll" (ByVal appender As LongPtr) As Long
+Private Declare PtrSafe Function duckdb_append_bool Lib "duckdb.dll" (ByVal appender As LongPtr, ByVal val As Byte) As Long
+Private Declare PtrSafe Function duckdb_append_int64 Lib "duckdb.dll" (ByVal appender As LongPtr, ByVal val As LongLong) As Long
+Private Declare PtrSafe Function duckdb_append_double Lib "duckdb.dll" (ByVal appender As LongPtr, ByVal val As Double) As Long
+Private Declare PtrSafe Function duckdb_append_date Lib "duckdb.dll" (ByVal appender As LongPtr, ByVal val As Long) As Long
+Private Declare PtrSafe Function duckdb_append_time Lib "duckdb.dll" (ByVal appender As LongPtr, ByVal val As LongLong) As Long
+Private Declare PtrSafe Function duckdb_append_timestamp Lib "duckdb.dll" (ByVal appender As LongPtr, ByVal val As LongLong) As Long
+Private Declare PtrSafe Function duckdb_append_varchar Lib "duckdb.dll" (ByVal appender As LongPtr, ByVal val As LongPtr) As Long
+
+Private Const TYPE_INFER_ROWS As Long = 1000
+
 Private hDll As LongPtr
 Private FSQL As String
 Private FHeaders As Boolean
+Private FConn As LongPtr
 
 ' duckdb_string_t(16バイト) 短い文字列(<=12バイト)はインライン格納
 Private Type DuckDBStringShort
@@ -85,7 +103,7 @@ End Type
 '*****************************************************************************
 Private Sub Class_Initialize()
     If DLLPATH = "" Then
-        hDll = LoadLibrary(ThisWorkbook.Path & "\duckdb.dll")
+        hDll = LoadLibrary(ThisWorkbook.path & "\duckdb.dll")
     Else
         hDll = LoadLibrary(DLLPATH)
     End If
@@ -134,7 +152,9 @@ Public Function Execute(Optional ByVal strSQL As String = "") As Long
     Dim resBuf(0 To 255) As LongPtr
     
     If strSQL = "" Then strSQL = FSQL
-    If OpenDB(db, conn) <> DuckDBSuccess Then Err.Raise 513, , "DuckDBのオープンに失敗しました"
+    If OpenDB(db, conn) <> DuckDBSuccess Then
+        Call Err.Raise(513, , "DuckDBのオープンに失敗しました")
+    End If
     
 On Error GoTo ErrHandle
     res = VarPtr(resBuf(0))
@@ -249,6 +269,209 @@ ErrHandle:
     Call duckdb_destroy_result(res)
     Call CloseDB(db, conn)
     Call Err.Raise(Err.Number, Err.Source, Err.Description)
+End Function
+
+'*****************************************************************************
+'[概要] 範囲のデータをTEMPテーブルに投入し、テーブル名を返す（同名のテーブルが既にあれば投入せずにその名前を返す）
+'[引数] 投入元の範囲（1行目を列名、2行目以降をデータとする）
+'[戻値] 作成（または既存）のTEMPテーブル名
+'*****************************************************************************
+Public Function CreateTempTable(ByRef objRange As Range) As String
+    Dim strName As String
+    Dim vData As Variant
+    Dim vOne(1 To 1, 1 To 1) As Variant
+    Dim strTypes() As String
+    Dim strCols As String
+    Dim strHead As String
+    Dim strErr As String
+    Dim strSQL As String
+    Dim resBuf(0 To 255) As LongPtr
+    Dim res As LongPtr
+    Dim app As LongPtr
+    Dim lngRow As Long, lngCol As Long
+
+On Error GoTo ErrHandle
+    strName = MakeTempTableName(objRange)
+    vData = objRange.Value
+    If Not IsArray(vData) Then
+        vOne(1, 1) = vData
+        vData = vOne
+    End If
+
+    ' 列数分の型配列を確保
+    ReDim strTypes(1 To objRange.Columns.Count)
+    For lngCol = 1 To objRange.Columns.Count
+        strTypes(lngCol) = InferColumnType(vData, lngCol, Application.Min(objRange.Rows.Count, TYPE_INFER_ROWS))
+        If IsError(vData(1, lngCol)) Then
+            strHead = ""
+        Else
+            strHead = CStr(vData(1, lngCol))
+        End If
+        ' もし列名が空なら、col1, col2, ... とする
+        If strHead = "" Then
+            strHead = "col" & lngCol
+        End If
+
+        ' 例："col1" TEXT, "col2" INTEGER, ...
+        If strCols <> "" Then
+            strCols = strCols & ", "
+        End If
+        strCols = strCols & """" & strHead & """ " & strTypes(lngCol)
+    Next
+
+    ' テーブル作成SQLを組み立て
+    strSQL = "CREATE TEMP TABLE """ & strName & """ (" & strCols & ")"
+    res = VarPtr(resBuf(0))
+    If duckdb_query(FConn, StrPtr(StringToUTF8(strSQL)), res) <> DuckDBSuccess Then
+        strErr = UTF8ToString(duckdb_result_error(res))
+        Call duckdb_destroy_result(res)
+        If InStr(strErr, strName) = 0 Or InStr(strErr, "already exists") = 0 Then Err.Raise 513, , strErr
+        CreateTempTable = strName
+        Exit Function
+    End If
+    Call duckdb_destroy_result(res)
+
+    ' Appenderを使ってデータを挿入
+    If duckdb_appender_create(FConn, 0, StrPtr(StringToUTF8(strName)), app) <> DuckDBSuccess Then Err.Raise 513, , "Appenderの作成に失敗しました"
+    For lngRow = 2 To objRange.Rows.Count
+        For lngCol = 1 To objRange.Columns.Count
+            If AppendValue(app, vData(lngRow, lngCol), strTypes(lngCol)) <> DuckDBSuccess Then Err.Raise 513, , UTF8ToString(duckdb_appender_error(app))
+        Next
+        If duckdb_appender_end_row(app) <> DuckDBSuccess Then Err.Raise 513, , UTF8ToString(duckdb_appender_error(app))
+    Next
+    If duckdb_appender_flush(app) <> DuckDBSuccess Then Err.Raise 513, , UTF8ToString(duckdb_appender_error(app))
+    Call duckdb_appender_destroy(app)
+    CreateTempTable = strName
+    Exit Function
+ErrHandle:
+    If app <> 0 Then Call duckdb_appender_destroy(app)
+    Call Err.Raise(Err.Number, Err.Source, Err.Description)
+End Function
+
+'*****************************************************************************
+'[概要] 範囲のブック名・シート名・アドレスからTEMPテーブル名を作成する（使えない文字は_に置換）
+'[引数] 対象の範囲
+'[戻値] TEMPテーブル名（先頭はTMP_）
+'*****************************************************************************
+Private Function MakeTempTableName(ByRef objRange As Range) As String
+    Dim strSrc As String, strName As String
+    Dim i As Long, code As Long
+    strSrc = objRange.Worksheet.Parent.Name & "!" & objRange.Worksheet.Name & "!" & objRange.Address(False, False)
+    For i = 1 To Len(strSrc)
+        code = AscW(Mid(strSrc, i, 1))
+        If (code >= 48 And code <= 57) Or (code >= 65 And code <= 90) Or (code >= 97 And code <= 122) Or code = 95 Or code < 0 Or code > 127 Then
+            strName = strName & Mid(strSrc, i, 1)
+        Else
+            strName = strName & "_"
+        End If
+    Next
+    MakeTempTableName = "TMP_" & strName
+End Function
+
+'*****************************************************************************
+'[概要] 列の値からDuckDBの列型を推論する（日付・時刻は DATE / TIME / TIMESTAMP を判定）
+'[引数] 値の2次元配列、列番号、判定終了行（見出しの次の行から判定する）
+'[戻値] DuckDBの型名
+'*****************************************************************************
+Private Function InferColumnType(ByRef vData As Variant, ByVal lngCol As Long, ByVal lngLast As Long) As String
+    Dim lngRow As Long, v As Variant, strKind As String, strKinds As String
+    Dim blnDay As Boolean, blnTime As Boolean
+    blnDay = True
+    blnTime = True
+    ' 明細行（行番号2）から判定終了行までループ
+    For lngRow = 2 To lngLast
+        v = vData(lngRow, lngCol)
+        strKind = GetCellKind(v)
+        If strKind <> "" And InStr(strKinds, strKind) = 0 Then
+            strKinds = strKinds & strKind
+        End If
+        If strKind = "T" Then
+            If CDbl(v) <> Int(CDbl(v)) Then blnDay = False
+            If Int(CDbl(v)) <> 0 Then blnTime = False
+        End If
+    Next
+    Select Case strKinds
+    Case "B"
+        InferColumnType = "BOOLEAN"
+    Case "I"
+        InferColumnType = "BIGINT"
+    Case "D", "DI", "ID"
+        InferColumnType = "DOUBLE"
+    Case "T"
+        Select Case True
+        Case blnDay
+            InferColumnType = "DATE"
+        Case blnTime
+            InferColumnType = "TIME"
+        Case Else
+            InferColumnType = "TIMESTAMP"
+        End Select
+    Case Else
+        InferColumnType = "VARCHAR"
+    End Select
+End Function
+
+'*****************************************************************************
+'[概要] セルの値の種類を返す（B:真偽値、I:整数、D:小数、T:日付時刻、S:文字列、空文字:NULL扱い）
+'[引数] セルの値
+'[戻値] 値の種類
+'*****************************************************************************
+Private Function GetCellKind(ByVal v As Variant) As String
+    If IsError(v) Or IsEmpty(v) Then Exit Function
+    Select Case VarType(v)
+    Case vbBoolean
+        GetCellKind = "B"
+    Case vbDate
+        GetCellKind = "T"
+    Case vbString
+        If v <> "" Then GetCellKind = "S"
+    Case Else
+        If IsNumeric(v) Then
+            If CDbl(v) = Int(CDbl(v)) And Abs(CDbl(v)) < 9E+18 Then
+                GetCellKind = "I"
+            Else
+                GetCellKind = "D"
+            End If
+        Else
+            GetCellKind = "S"
+        End If
+    End Select
+End Function
+
+'*****************************************************************************
+'[概要] 値を列型に応じて変換し、Appenderに追加する（空の値はNULLとして追加）
+'[引数] Appender、値、DuckDBの型名
+'[戻値] DuckDBの処理結果（0:成功）
+'*****************************************************************************
+Private Function AppendValue(ByVal app As LongPtr, ByVal v As Variant, ByVal strType As String) As Long
+    If IsError(v) Or IsEmpty(v) Then
+        AppendValue = duckdb_append_null(app)
+    ElseIf VarType(v) = vbString And v = "" Then
+        AppendValue = duckdb_append_null(app)
+    Else
+        Select Case strType
+        Case "BOOLEAN"
+            AppendValue = duckdb_append_bool(app, IIf(CBool(v), 1, 0))
+        Case "BIGINT"
+            If CDbl(v) <> Int(CDbl(v)) Then
+                Call Err.Raise(13, , "BIGINT列に小数が含まれています")
+            End If
+            AppendValue = duckdb_append_int64(app, CLngLng(CDbl(v)))
+        Case "DOUBLE"
+            AppendValue = duckdb_append_double(app, CDbl(v))
+        Case "DATE"
+            If CDbl(v) <> Int(CDbl(v)) Then
+                Call Err.Raise(13, , "DATE列に時刻が含まれています")
+            End If
+            AppendValue = duckdb_append_date(app, CLng(Int(CDbl(v))) - CLng(DateSerial(1970, 1, 1)))
+        Case "TIME"
+            AppendValue = duckdb_append_time(app, CLngLng(Round((CDbl(v) - Int(CDbl(v))) * 86400000000#)))
+        Case "TIMESTAMP"
+            AppendValue = duckdb_append_timestamp(app, CLngLng(Round((CDbl(v) - CDbl(DateSerial(1970, 1, 1))) * 86400000000#)))
+        Case Else
+            AppendValue = duckdb_append_varchar(app, StrPtr(StringToUTF8(CStr(v))))
+        End Select
+    End If
 End Function
 
 '*****************************************************************************
