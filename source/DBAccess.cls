@@ -52,26 +52,22 @@ End Function
 '[概要] ＳＱＬの構文チェックを行う
 '       項目名の間違いはパラメータと判定されるのでパラメータの情報を表示する例外を生成する
 '[引数] SQL
-'[戻値] なし
+'[戻値] 構文エラーのパラメータ情報
 '*****************************************************************************
-Public Sub CheckSQL(Optional ByVal strSQL As String = "")
+Public Function CheckSQL(Optional ByVal strSQL As String = "") As String
     If strSQL = "" Then
         strSQL = FSQL
     End If
-    Dim Param  As Object
-    Dim strErr As String
+    Dim param  As Object
     With CreateObject("ADODB.Command")
         .ActiveConnection = GetConnection()
         .CommandType = adCmdText
         .CommandText = strSQL
-        For Each Param In .Parameters
-            strErr = strErr & Param.Name & " ? " & vbLf
+        For Each param In .Parameters
+            CheckSQL = CheckSQL & param.Name & " ? " & vbLf
         Next
     End With
-    If strErr <> "" Then
-        Call Err.Raise(513, , strErr)
-    End If
-End Sub
+End Function
 
 '*****************************************************************************
 '[概要] 更新系またはDDLのSQLを実行する(※Accessファイルに対して実行可能)
