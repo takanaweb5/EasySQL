@@ -366,9 +366,11 @@ Public Function ReplaceTempTableRef(ByVal strSQL As String, ByRef objSQLCell As 
     ReplaceTempTableRef = strSQL
     If objRegExp.Test(strSQL) Then
         For Each objMatch In objRegExp.Execute(strSQL)
+            ' 例：{A1} または {Sheet1!A1:B10} や名前など
             strRef = objMatch.SubMatches(0)
             Set objRng = ExecSQL.ToRange(strRef, objSQLCell)
             If objRng Is Nothing Then
+                ' シート名のみの場合　例：Sheet1 → Sheet1!A1
                 If Right(strRef, 1) = "!" Then
                     Set objRng = ExecSQL.ToRange(strRef & "A1", objSQLCell)
                 Else
@@ -378,38 +380,57 @@ Public Function ReplaceTempTableRef(ByVal strSQL As String, ByRef objSQLCell As 
             End If
             If Not objRng Is Nothing Then Set objRng = TrimRange(objRng)
             If Not objRng Is Nothing Then
-                ReplaceTempTableRef = Replace(ReplaceTempTableRef, objMatch.Value, """" & CreateTempTable(MakeTempTableName(objSQLCell.Worksheet.Parent.Name & "!" & objSQLCell.Worksheet.Name & "!" & strRef), objRng) & """")
+                ReplaceTempTableRef = Replace(ReplaceTempTableRef, objMatch.Value, """" & _
+                    CreateTempTable(MakeTempTableName(strRef), objRng) & """")
             End If
         Next
     End If
 End Function
 
 '*****************************************************************************
-'[概要] 全行・全列の範囲を、ヘッダ行の最後の列とA列の最後の行までに絞る
+'[概要] 全行・全列の範囲を、左上セルの隣から連続する値の終端までに絞る（全行の範囲は列、全列の範囲は行を絞る）
 '[引数] 対象の範囲
-'[戻値] 絞り込み後の範囲（終端が始端より前になる場合はNothing）
+'[戻値] 絞り込み後の範囲（左上セルが空の場合はエラー）
 '*****************************************************************************
 Private Function TrimRange(ByRef objRange As Range) As Range
-    Dim ws As Worksheet
-    Dim lngLastRow As Long, lngLastCol As Long
+    Dim lngTop As Long, lngLeft As Long
     Dim lngEndRow As Long, lngEndCol As Long
 
-    Set ws = objRange.Worksheet
-    If objRange.Rows.Count <> ws.Rows.Count And objRange.Columns.Count <> ws.Columns.Count Then
+    ' 全行・全列の範囲以外の場合、そのまま返す
+    If objRange.Rows.Count = Rows.Count Or _
+       objRange.Columns.Count = Columns.Count Then
+        ' 処理を続ける
+    Else
         Set TrimRange = objRange
         Exit Function
     End If
-    If Application.WorksheetFunction.CountA(ws.Rows(1)) = 0 Or Application.WorksheetFunction.CountA(ws.Columns(1)) = 0 Then
-        Set TrimRange = ws.Cells(objRange.Row, objRange.Column)
-        Exit Function
+
+    ' 左上セルが空の場合、エラーにする
+    If IsEmpty(objRange.Cells(1, 1).Value) Then
+        Call Err.Raise(513, , "範囲の左上セルが空のため、テンポラリテーブルを作成できません")
     End If
 
-    lngLastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
-    lngLastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
-    lngEndRow = Application.Min(objRange.Row + objRange.Rows.Count - 1, lngLastRow)
-    lngEndCol = Application.Min(objRange.Column + objRange.Columns.Count - 1, lngLastCol)
-    If lngEndRow < objRange.Row Or lngEndCol < objRange.Column Then Exit Function
-    Set TrimRange = ws.Range(ws.Cells(objRange.Row, objRange.Column), ws.Cells(lngEndRow, lngEndCol))
+    lngTop = objRange.Row
+    lngLeft = objRange.Column
+    lngEndRow = lngTop + objRange.Rows.Count - 1
+    lngEndCol = lngLeft + objRange.Columns.Count - 1
+
+    ' 全行の範囲は列を、全列の範囲は行を、左上セルの隣から連続する値の終端まで絞る
+    If objRange.Columns.Count = Columns.Count Then
+        If IsEmpty(objRange.Cells(1, 2).Value) Then
+            lngEndCol = lngLeft
+        Else
+            lngEndCol = objRange.Cells(1, 1).End(xlToRight).Column
+        End If
+    End If
+    If objRange.Rows.Count = Rows.Count Then
+        If IsEmpty(objRange.Cells(2, 1).Value) Then
+            lngEndRow = lngTop
+        Else
+            lngEndRow = objRange.Cells(1, 1).End(xlDown).Row
+        End If
+    End If
+    Set TrimRange = objRange.Resize(lngEndRow - lngTop + 1, lngEndCol - lngLeft + 1)
 End Function
 
 '*****************************************************************************
