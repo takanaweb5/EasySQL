@@ -15,19 +15,19 @@
 </mso:group>
 
 <mso:group id="UserTab1_group2" label="Access">
-<mso:button idQ="doc:CreateDB_1"           visible="true" label="データベース作成"    imageMso="MicrosoftAccess"     onAction="ExecSQL.CreateDB"
+<mso:button idQ="doc:CreateDB_1"           visible="true" label="データベース作成"    imageMso="MicrosoftAccess"     onAction="AccessEtc.CreateDB"
             supertip="Accessのデータベースファイルを作成します" />
-<mso:button idQ="doc:ShowTables_1"         visible="true" label="テーブル一覧表示"    imageMso="BulletListDefault"   onAction="ExecSQL.ShowTables"
+<mso:button idQ="doc:ShowTables_1"         visible="true" label="テーブル一覧表示"    imageMso="BulletListDefault"   onAction="AccessEtc.ShowTables"
             supertip="Accessデータベースのテーブルの一覧を表示します" />
 <mso:button idQ="doc:Dummy_1"              visible="true" label=" " enabled="false"/>
-<mso:button idQ="doc:MakeImportSQL_1"      visible="true" label="インポート用SQL作成" showImage="false" onAction="ExecSQL.MakeImportSQL"
+<mso:button idQ="doc:MakeImportSQL_1"      visible="true" label="インポート用SQL作成" showImage="false" onAction="AccessEtc.MakeImportSQL"
             supertip="テーブルインポート用のSQLのひな型を作成し、クリップボードにコピーします" />
-<mso:button idQ="doc:MakeDeleteTableSQL_1" visible="true" label="削除用SQL作成"       showImage="false" onAction="ExecSQL.MakeDeleteTableSQL"
+<mso:button idQ="doc:MakeDeleteTableSQL_1" visible="true" label="削除用SQL作成"       showImage="false" onAction="AccessEtc.MakeDeleteTableSQL"
             supertip="テーブル削除用のSQLのひな型を作成し、クリップボードにコピーします" />
 <mso:button idQ="doc:Dummy_2"              visible="true" label=" " enabled="false"/>
-<mso:button idQ="doc:MakeQuerySQL_1"       visible="true" label="クエリ作成用SQL作成" showImage="false" onAction="ExecSQL.MakeQuerySQL"
+<mso:button idQ="doc:MakeQuerySQL_1"       visible="true" label="クエリ作成用SQL作成" showImage="false" onAction="AccessEtc.MakeQuerySQL"
             supertip="クエリ作成用のSQLのひな型を作成し、クリップボードにコピーします" />
-<mso:button idQ="doc:MakeDeleteQuerySQL_1" visible="true" label="クエリ削除用SQL作成" showImage="false" onAction="ExecSQL.MakeDeleteQuerySQL"
+<mso:button idQ="doc:MakeDeleteQuerySQL_1" visible="true" label="クエリ削除用SQL作成" showImage="false" onAction="AccessEtc.MakeDeleteQuerySQL"
             supertip="クエリ削除用のSQLのひな型を作成し、クリップボードにコピーします" />
 </mso:group>
 </mso:tab>
