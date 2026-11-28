@@ -29,9 +29,9 @@ Public Sub MakeSQL()
         For i = 1 To objArea.Columns.Count
             If strSELECT = "" Then
                 strSELECT = "SELECT DISTINCT"
-                strSELECT = strSELECT & vbCrLf & "  [" & objArea(1, i).Text & "]"
+                strSELECT = strSELECT & vbCrLf & "  [" & objArea(1, i).text & "]"
             Else
-                strSELECT = strSELECT & vbCrLf & ", [" & objArea(1, i).Text & "]"
+                strSELECT = strSELECT & vbCrLf & ", [" & objArea(1, i).text & "]"
             End If
         Next
     Next
@@ -66,7 +66,7 @@ End Sub
 Public Sub SetClipbordText(ByVal strText As String)
     With CreateObject("Forms.TextBox.1")
         .MultiLine = True
-        .Text = strText
+        .text = strText
         .SelStart = 0
         .SelLength = .TextLength
         .Copy
@@ -92,21 +92,14 @@ End Sub
 '*****************************************************************************
 Private Sub ExecuteSQL(ByVal IsSelect As Boolean)
 On Error GoTo ErrHandle
-    If ActiveWorkbook.Path = "" Then
-        Call MsgBox("一度も保存されていないファイルはエラーになることがあります")
-    End If
-    
+'    If ActiveWorkbook.path = "" Then
+'        Call MsgBox("一度も保存されていないファイルはエラーになることがあります")
+'    End If
+
     If Selection Is Nothing Then
         Exit Sub
     End If
     If Not (TypeOf Selection Is Range) Then
-        Exit Sub
-    End If
-    
-    If Left(ActiveWorkbook.FullName, 8) = "https://" Then
-        Call MsgBox("ファイルをダウンロードフォルダにコピーします")
-        Const TMP_FILE = "D:\Users\{USERID}\Downloads\_"
-        Call ActiveWorkbook.SaveAs(Replace(TMP_FILE, "{USERID}", Environ("USERNAME")) & ActiveWorkbook.Name)
         Exit Sub
     End If
     
@@ -116,65 +109,53 @@ On Error GoTo ErrHandle
         Exit Sub
     End If
     
-    'SQLの構文チェックを実施する
-    Dim clsDBAccess  As New DBAccess
-    clsDBAccess.SQL = ReplaceCellReference(objSQLCell)
-    Call clsDBAccess.CheckSQL
+    If IsSelect Then
+        'セルを選択させる
+        Dim objTopLeftCell As Range
+        Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
+        If objTopLeftCell Is Nothing Then
+            Exit Sub
+        Else
+            '選択領域の左上のセルを設定
+            Set objTopLeftCell = objTopLeftCell.Cells(1)
+            
+            '結果のシートを表示して、結果のセルを選択
+            Call objTopLeftCell.Worksheet.Activate
+            Call objTopLeftCell.Select
+            DoEvents
+        End If
+    End If
+    
+    'SQLを実行
+    Dim dblTime As Double
+    Dim lngRecCount As Long
+    Dim strTime As String
+    dblTime = Timer()
+    strTime = vbCrLf & vbCrLf & "実行時間：{実行時間} 秒"
+    Dim strTitle As String
+    
+'    Dim clsDBAccess  As New DBAccess
+    Dim clsDBAccess  As New DuckDBAccess
+    clsDBAccess.SQL = clsDBAccess.ReplaceTempTableRef(ReplaceCellReference(objSQLCell), objSQLCell)
     
     If IsSelect Then
-        Call ShowRecord(clsDBAccess)
+        lngRecCount = clsDBAccess.ExecuteToRange(objTopLeftCell)
+        strTitle = "レコード件数は "
     Else
-        Call Execute(clsDBAccess)
-    End If
-    Exit Sub
-ErrHandle:
-    'エラーメッセージを表示
-    Call MsgBox(Err.Description)
-End Sub
-
-'*****************************************************************************
-'[概要] DDLまたはDMLのSQLを実行する
-'[引数] SQL
-'[戻値] なし
-'*****************************************************************************
-Private Sub Execute(ByRef clsDBAccess As DBAccess)
-    'コマンドを実行
-    Dim dblTime As Double
-    Dim lngRecCount As Long
-    dblTime = Timer()
-    lngRecCount = clsDBAccess.Execute()
-    Call MsgBox("更新件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
-                "実行時間：" & Int(Timer() - dblTime) & " 秒")
-End Sub
-
-'*****************************************************************************
-'[概要] SELECT文の結果を表形式でセルに展開する
-'[引数] SQL
-'[戻値] なし
-'*****************************************************************************
-Private Sub ShowRecord(ByRef clsDBAccess As DBAccess)
-    'セルを選択させる
-    Dim objTopLeftCell As Range
-    Set objTopLeftCell = SelectCell("結果を表示するセルを選択してください", Selection)
-    If objTopLeftCell Is Nothing Then
-        Exit Sub
-    Else
-        '選択領域の左上のセルを設定
-        Set objTopLeftCell = objTopLeftCell.Cells(1)
-        
-        '結果のシートを表示して、結果のセルを選択
-        Call objTopLeftCell.Worksheet.Activate
-        Call objTopLeftCell.Select
-        DoEvents
+        lngRecCount = clsDBAccess.Execute()
+        strTitle = "更新件数は "
     End If
     
-    'SELECT文の実行結果のレコードセットをセルに設定
-    Dim dblTime As Double
-    Dim lngRecCount As Long
-    dblTime = Timer()
-    lngRecCount = clsDBAccess.ExecuteToRange(objTopLeftCell)
-    Call MsgBox("レコード件数は " & lngRecCount & " 件です" & vbCrLf & vbCrLf & _
-                "実行時間：" & Int(Timer() - dblTime) & " 秒")
+    Call MsgBox(strTitle & lngRecCount & " 件です" & Replace(strTime, "{実行時間}", Int(Timer() - dblTime)))
+    Exit Sub
+ErrHandle:
+    Dim strErrMsg As String
+    If InStr(1, Err.Description, "パラメーターの値が設定されていません") > 0 Then
+        strErrMsg = "カラムの指定に誤りがあります" & vbCrLf & clsDBAccess.CheckSQL
+    Else
+        strErrMsg = Err.Description
+    End If
+    Call MsgBox(strErrMsg & Replace(strTime, "{実行時間}", Int(Timer() - dblTime)))
 End Sub
 
 '*****************************************************************************
@@ -188,7 +169,7 @@ Public Function SelectCell(ByVal strMsg As String, ByRef objCurrentCell As Range
     With frmSelectCell
         .Label.Caption = strMsg
         Call objCurrentCell.Worksheet.Activate
-        .RefEdit.Text = objCurrentCell.AddressLocal
+        .RefEdit.text = objCurrentCell.AddressLocal
         Call .Show
         If .IsOK = True Then
             strCell = .RefEdit
@@ -218,6 +199,7 @@ On Error GoTo ErrHandle
     Dim objMatch   As Object
     Dim strSubSQL  As String
     Dim strReplace As String
+    Dim objRng As Range
     
     Set objRegExp = CreateObject("VBScript.RegExp")
     objRegExp.Global = True
@@ -229,20 +211,15 @@ On Error GoTo ErrHandle
             strReplace = objMatch.SubMatches(0)
             Select Case StrConv(strReplace, vbUpperCase)
             Case "MYPATH"
-                ReplaceCellReference = Replace(ReplaceCellReference, objMatch, ActiveWorkbook.Path)
+                ReplaceCellReference = Replace(ReplaceCellReference, objMatch, ActiveWorkbook.path)
             Case "MYSHEET"
                 ReplaceCellReference = Replace(ReplaceCellReference, objMatch, objSQLCell.Worksheet.Name)
             Case Else
-                Select Case IsCellAddress(strReplace, objSQLCell.Worksheet)
-                Case 1 '同一シートのセルの時
-                    '同一シート内のセルの内容で置換える　※例：Range("A1")等
-                    strSubSQL = ReplaceCellReference(objSQLCell.Worksheet.Range(strReplace))
+                Set objRng = ToRange(strReplace, objSQLCell)
+                If Not objRng Is Nothing Then
+                    strSubSQL = ReplaceCellReference(objRng)
                     ReplaceCellReference = Replace(ReplaceCellReference, objMatch, strSubSQL)
-                Case 2 '別シートのセルの時
-                    '別シート内のセルの内容で置換える　※例：Range("Sheet1!A1")等
-                    strSubSQL = ReplaceCellReference(Range(strReplace))
-                    ReplaceCellReference = Replace(ReplaceCellReference, objMatch, strSubSQL)
-                End Select
+                End If
             End Select
         Next
     End If
@@ -250,25 +227,14 @@ ErrHandle:
 End Function
 
 '*****************************************************************************
-'[概要] strAddressがCellを指すアドレスかどうか
-'[引数] チェック対象の文字列(アドレス または 名前)、カレントシート
-'[戻値] 0:無効なアドレス、1:カレントシートのアドレス、2:別シートのアドレス
+'[概要] SQLのセルを基準に、数式と同じ参照構文の文字列をRangeとして取得する
+'[引数] 参照文字列（例：A1、Sheet2!A1、[Book1.xlsx]Sheet2!$H$6:$I$8、名前）、SQLの入力させたセル
+'[戻値] 参照先のRange（不正な参照の時はNothing）
 '*****************************************************************************
-Private Function IsCellAddress(ByVal strAddress As String, ByRef objWorksheet As Worksheet) As Long
-    Dim Dummy As Range
+Public Function ToRange(ByVal strAddress As String, ByRef objSQLCell As Range) As Range
+    If Left(strAddress, 1) = "{" And Right(strAddress, 1) = "}" Then Exit Function
     On Error Resume Next
-    Set Dummy = Range(strAddress)
-    If Err.Number <> 0 Then
-        IsCellAddress = 0 'エラーの時は無効なアドレス
-    Else
-        Set Dummy = objWorksheet.Range(strAddress)
-        If Err.Number <> 0 Then
-            IsCellAddress = 2 'エラーの時は別シートのアドレス
-        Else
-            IsCellAddress = 1 'エラーでなければカレントシートのアドレス
-        End If
-    End If
-    On Error GoTo 0
+    Set ToRange = objSQLCell.Worksheet.Evaluate(strAddress)
 End Function
 
 '*****************************************************************************
@@ -284,7 +250,7 @@ Private Function GetRangeText(ByRef objRange As Range) As String
     
     '単一セルの時
     If objRange.Count = 1 Or objRange.Address = objRange(1, 1).MergeArea.Address Then
-        GetRangeText = objRange(1).Text
+        GetRangeText = objRange(1).text
         Exit Function
     End If
     
@@ -292,14 +258,14 @@ Private Function GetRangeText(ByRef objRange As Range) As String
     If objRange.Rows.Count = 1 Or objRange.Rows.Count = Rows.Count Then
         '領域の数だけLOOP
         For Each objCell In objRange.Areas
-            '列数分LOOPし、各項目をカッコではさみコンマで連結　例：[姓], [名]
+            '列数分LOOPし、各項目をコンマで連結　例：姓, 名
             For i = 1 To objCell.Columns.Count
                 strCellText = objCell.Cells(1, i)
                 If strCellText <> "" Then
                     If GetRangeText = "" Then
-                        GetRangeText = "[" & strCellText & "]"
+                        GetRangeText = strCellText
                     Else
-                        GetRangeText = GetRangeText & ",[" & strCellText & "]"
+                        GetRangeText = GetRangeText & "," & strCellText
                     End If
                 End If
             Next
@@ -328,7 +294,7 @@ Public Sub MakeConnectStr()
     Const EXCEL = "[EXCEL 12.0;DATABASE={File}]"
     Const ACCESS1 = "[MS ACCESS;DATABASE={File}]"
     Const ACCESS2 = "[MS ACCESS;DATABASE={File};PWD={Password}]"
-    Const Text = "[TEXT;DATABASE={Folder}].[{File}]"
+    Const text = "[TEXT;DATABASE={Folder}].[{File}]"
 
 On Error GoTo ErrHandle
     Dim vDBName As Variant
@@ -360,7 +326,7 @@ On Error GoTo ErrHandle
             strConnect = Replace(strConnect, "{Password}", strPass)
         End If
     Case Else
-        strConnect = Replace(Text, "{Folder}", strFolder)
+        strConnect = Replace(text, "{Folder}", strFolder)
         strConnect = Replace(strConnect, "{File}", strFile)
     End Select
     

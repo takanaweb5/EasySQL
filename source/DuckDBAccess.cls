@@ -59,7 +59,7 @@ Private Declare PtrSafe Function duckdb_get_type_id Lib "duckdb.dll" (ByVal logi
 Private Declare PtrSafe Sub duckdb_destroy_logical_type Lib "duckdb.dll" (ByRef type_ptr As LongPtr)
 Private Declare PtrSafe Function duckdb_vector_get_data Lib "duckdb.dll" (ByVal vector As LongPtr) As LongPtr
 Private Declare PtrSafe Function duckdb_vector_get_validity Lib "duckdb.dll" (ByVal vector As LongPtr) As LongPtr
-Private Declare PtrSafe Function duckdb_validity_row_is_valid Lib "duckdb.dll" (ByVal validity As LongPtr, ByVal row As LongLong) As Byte
+Private Declare PtrSafe Function duckdb_validity_row_is_valid Lib "duckdb.dll" (ByVal validity As LongPtr, ByVal Row As LongLong) As Byte
 
 ' Appender関連
 Private Declare PtrSafe Function duckdb_appender_create Lib "duckdb.dll" (ByVal conn As LongPtr, ByVal schema As LongPtr, ByVal table As LongPtr, ByRef out_appender As LongPtr) As Long
@@ -81,6 +81,7 @@ Private Const TYPE_INFER_ROWS As Long = 1000
 Private hDll As LongPtr
 Private FSQL As String
 Private FHeaders As Boolean
+Private FDB As LongPtr
 Private FConn As LongPtr
 
 ' duckdb_string_t(16バイト) 短い文字列(<=12バイト)はインライン格納
@@ -107,6 +108,7 @@ Private Sub Class_Initialize()
     Else
         hDll = LoadLibrary(DLLPATH)
     End If
+    If OpenDB(FDB, FConn) <> DuckDBSuccess Then Call Err.Raise(513, , "DuckDBのオープンに失敗しました")
     FHeaders = True
 End Sub
 
@@ -116,6 +118,7 @@ End Sub
 '[戻値] なし
 '*****************************************************************************
 Private Sub Class_Terminate()
+    Call CloseDB(FDB, FConn)
     If hDll <> 0 Then Call FreeLibrary(hDll)
 End Sub
 
@@ -141,34 +144,37 @@ Public Property Let SQL(ByVal strSQL As String)
     FSQL = strSQL
 End Property
 
+
+'*****************************************************************************
+'[概要] DBAccessクラスのインターフェースにあわせるため
+'[引数] SQL
+'[戻値] 構文エラーのパラメータ情報
+'*****************************************************************************
+Public Function CheckSQL(Optional ByVal strSQL As String = "") As String
+End Function
+
 '*****************************************************************************
 '[概要] 更新系またはDDLのSQLを実行する
 '[引数] SQL
 '[戻値] 更新系SQLの時、更新レコード数（SELECTやDDLでは0）
 '*****************************************************************************
 Public Function Execute(Optional ByVal strSQL As String = "") As Long
-    Dim db As LongPtr, conn As LongPtr
     Dim res As LongPtr ' duckdb_result 構造体バッファ（環境に合わせて十分なサイズを確保）
     Dim resBuf(0 To 255) As LongPtr
     
     If strSQL = "" Then strSQL = FSQL
-    If OpenDB(db, conn) <> DuckDBSuccess Then
-        Call Err.Raise(513, , "DuckDBのオープンに失敗しました")
-    End If
     
 On Error GoTo ErrHandle
     res = VarPtr(resBuf(0))
-    If duckdb_query(conn, StrPtr(StringToUTF8(strSQL)), res) <> DuckDBSuccess Then
+    If duckdb_query(FConn, StrPtr(StringToUTF8(strSQL)), res) <> DuckDBSuccess Then
         Call Err.Raise(513, , UTF8ToString(duckdb_result_error(res)))
     End If
     
     Execute = CLng(duckdb_rows_changed(res))
     Call duckdb_destroy_result(res)
-    Call CloseDB(db, conn)
     Exit Function
 ErrHandle:
     Call duckdb_destroy_result(res)
-    Call CloseDB(db, conn)
     Call Err.Raise(Err.Number, Err.Source, Err.Description)
 End Function
 
@@ -191,7 +197,6 @@ End Function
 '[戻値] 実行結果の2次元配列
 '*****************************************************************************
 Public Function ExecuteToArray(Optional ByVal strSQL As String = "") As Variant
-    Dim db As LongPtr, conn As LongPtr
     Dim resBuf(0 To 255) As LongPtr
     Dim res As LongPtr
     Dim colCount As Long, chunkCount As Long, totalRows As Long
@@ -201,11 +206,10 @@ Public Function ExecuteToArray(Optional ByVal strSQL As String = "") As Variant
     Dim vData() As Variant
     
     If strSQL = "" Then strSQL = FSQL
-    If OpenDB(db, conn) <> DuckDBSuccess Then Err.Raise 513, , "DuckDBのオープンに失敗しました"
     
 On Error GoTo ErrHandle
     res = VarPtr(resBuf(0))
-    If duckdb_query(conn, StrPtr(StringToUTF8(strSQL)), res) <> DuckDBSuccess Then
+    If duckdb_query(FConn, StrPtr(StringToUTF8(strSQL)), res) <> DuckDBSuccess Then
         Call Err.Raise(513, , UTF8ToString(duckdb_result_error(res)))
     End If
     
@@ -262,22 +266,19 @@ On Error GoTo ErrHandle
     Next
     
     Call duckdb_destroy_result(res)
-    Call CloseDB(db, conn)
     ExecuteToArray = vData
     Exit Function
 ErrHandle:
     Call duckdb_destroy_result(res)
-    Call CloseDB(db, conn)
     Call Err.Raise(Err.Number, Err.Source, Err.Description)
 End Function
 
 '*****************************************************************************
 '[概要] 範囲のデータをTEMPテーブルに投入し、テーブル名を返す（同名のテーブルが既にあれば投入せずにその名前を返す）
-'[引数] 投入元の範囲（1行目を列名、2行目以降をデータとする）
+'[引数] テーブル名、投入元の範囲（1行目を列名、2行目以降をデータとする）
 '[戻値] 作成（または既存）のTEMPテーブル名
 '*****************************************************************************
-Public Function CreateTempTable(ByRef objRange As Range) As String
-    Dim strName As String
+Public Function CreateTempTable(ByVal strName As String, ByRef objRange As Range) As String
     Dim vData As Variant
     Dim vOne(1 To 1, 1 To 1) As Variant
     Dim strTypes() As String
@@ -291,7 +292,6 @@ Public Function CreateTempTable(ByRef objRange As Range) As String
     Dim lngRow As Long, lngCol As Long
 
 On Error GoTo ErrHandle
-    strName = MakeTempTableName(objRange)
     vData = objRange.Value
     If Not IsArray(vData) Then
         vOne(1, 1) = vData
@@ -325,21 +325,21 @@ On Error GoTo ErrHandle
     If duckdb_query(FConn, StrPtr(StringToUTF8(strSQL)), res) <> DuckDBSuccess Then
         strErr = UTF8ToString(duckdb_result_error(res))
         Call duckdb_destroy_result(res)
-        If InStr(strErr, strName) = 0 Or InStr(strErr, "already exists") = 0 Then Err.Raise 513, , strErr
+        If InStr(strErr, strName) = 0 Or InStr(strErr, "already exists") = 0 Then Call Err.Raise(513, , strErr)
         CreateTempTable = strName
         Exit Function
     End If
     Call duckdb_destroy_result(res)
 
     ' Appenderを使ってデータを挿入
-    If duckdb_appender_create(FConn, 0, StrPtr(StringToUTF8(strName)), app) <> DuckDBSuccess Then Err.Raise 513, , "Appenderの作成に失敗しました"
+    If duckdb_appender_create(FConn, 0, StrPtr(StringToUTF8(strName)), app) <> DuckDBSuccess Then Call Err.Raise(513, , "Appenderの作成に失敗しました")
     For lngRow = 2 To objRange.Rows.Count
         For lngCol = 1 To objRange.Columns.Count
-            If AppendValue(app, vData(lngRow, lngCol), strTypes(lngCol)) <> DuckDBSuccess Then Err.Raise 513, , UTF8ToString(duckdb_appender_error(app))
+            If AppendValue(app, vData(lngRow, lngCol), strTypes(lngCol)) <> DuckDBSuccess Then Call Err.Raise(513, , UTF8ToString(duckdb_appender_error(app)))
         Next
-        If duckdb_appender_end_row(app) <> DuckDBSuccess Then Err.Raise 513, , UTF8ToString(duckdb_appender_error(app))
+        If duckdb_appender_end_row(app) <> DuckDBSuccess Then Call Err.Raise(513, , UTF8ToString(duckdb_appender_error(app)))
     Next
-    If duckdb_appender_flush(app) <> DuckDBSuccess Then Err.Raise 513, , UTF8ToString(duckdb_appender_error(app))
+    If duckdb_appender_flush(app) <> DuckDBSuccess Then Call Err.Raise(513, , UTF8ToString(duckdb_appender_error(app)))
     Call duckdb_appender_destroy(app)
     CreateTempTable = strName
     Exit Function
@@ -349,14 +349,78 @@ ErrHandle:
 End Function
 
 '*****************************************************************************
-'[概要] 範囲のブック名・シート名・アドレスからTEMPテーブル名を作成する（使えない文字は_に置換）
+'[概要] SQL内の{{範囲}}を、範囲のデータから作成したテンポラリテーブル名（ダブルクオート付き）に置換する
+'[引数] 置換前のSQL、SQLの入力させたセル
+'[戻値] 置換後のSQL（不正な範囲の{{...}}は残す）
+'*****************************************************************************
+Public Function ReplaceTempTableRef(ByVal strSQL As String, ByRef objSQLCell As Range) As String
+    Dim objRegExp As Object
+    Dim objMatch As Object
+    Dim objRng As Range
+    Dim strRef As String
+    
+    Set objRegExp = CreateObject("VBScript.RegExp")
+    objRegExp.Global = True
+    objRegExp.Pattern = "\{\{(.+?)\}\}"
+    
+    ReplaceTempTableRef = strSQL
+    If objRegExp.Test(strSQL) Then
+        For Each objMatch In objRegExp.Execute(strSQL)
+            strRef = objMatch.SubMatches(0)
+            Set objRng = ExecSQL.ToRange(strRef, objSQLCell)
+            If objRng Is Nothing Then
+                If Right(strRef, 1) = "!" Then
+                    Set objRng = ExecSQL.ToRange(strRef & "A1", objSQLCell)
+                Else
+                    Set objRng = ExecSQL.ToRange(strRef & "!A1", objSQLCell)
+                End If
+                If Not objRng Is Nothing Then Set objRng = objRng.Worksheet.Cells
+            End If
+            If Not objRng Is Nothing Then Set objRng = TrimRange(objRng)
+            If Not objRng Is Nothing Then
+                ReplaceTempTableRef = Replace(ReplaceTempTableRef, objMatch.Value, """" & CreateTempTable(MakeTempTableName(objSQLCell.Worksheet.Parent.Name & "!" & objSQLCell.Worksheet.Name & "!" & strRef), objRng) & """")
+            End If
+        Next
+    End If
+End Function
+
+'*****************************************************************************
+'[概要] 全行・全列の範囲を、ヘッダ行の最後の列とA列の最後の行までに絞る
 '[引数] 対象の範囲
+'[戻値] 絞り込み後の範囲（終端が始端より前になる場合はNothing）
+'*****************************************************************************
+Private Function TrimRange(ByRef objRange As Range) As Range
+    Dim ws As Worksheet
+    Dim lngLastRow As Long, lngLastCol As Long
+    Dim lngEndRow As Long, lngEndCol As Long
+
+    Set ws = objRange.Worksheet
+    If objRange.Rows.Count <> ws.Rows.Count And objRange.Columns.Count <> ws.Columns.Count Then
+        Set TrimRange = objRange
+        Exit Function
+    End If
+    If Application.WorksheetFunction.CountA(ws.Rows(1)) = 0 Or Application.WorksheetFunction.CountA(ws.Columns(1)) = 0 Then
+        Set TrimRange = ws.Cells(objRange.Row, objRange.Column)
+        Exit Function
+    End If
+
+    lngLastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    lngLastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    lngEndRow = Application.Min(objRange.Row + objRange.Rows.Count - 1, lngLastRow)
+    lngEndCol = Application.Min(objRange.Column + objRange.Columns.Count - 1, lngLastCol)
+    If lngEndRow < objRange.Row Or lngEndCol < objRange.Column Then Exit Function
+    Set TrimRange = ws.Range(ws.Cells(objRange.Row, objRange.Column), ws.Cells(lngEndRow, lngEndCol))
+End Function
+
+'*****************************************************************************
+'[概要] 文字列からTEMPテーブル名を作成する（使えない文字は_に置換）
+'[引数] 名前の元になる文字列（ブック!シート!参照）
 '[戻値] TEMPテーブル名（先頭はTMP_）
 '*****************************************************************************
-Private Function MakeTempTableName(ByRef objRange As Range) As String
+Private Function MakeTempTableName(ByVal strSource As String) As String
     Dim strSrc As String, strName As String
     Dim i As Long, code As Long
-    strSrc = objRange.Worksheet.Parent.Name & "!" & objRange.Worksheet.Name & "!" & objRange.Address(False, False)
+    strSrc = strSource
     For i = 1 To Len(strSrc)
         code = AscW(Mid(strSrc, i, 1))
         If (code >= 48 And code <= 57) Or (code >= 65 And code <= 90) Or (code >= 97 And code <= 122) Or code = 95 Or code < 0 Or code > 127 Then
